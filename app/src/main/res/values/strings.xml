@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">Blackjack</string>
+    <string name="website">Learn about the Game</string>
+    <string name="game">Play Blackjack</string>
+    <string name="welcome">Welcome to Blackjack. The closer you are to 21 points the better your chances of winning. If you go over 21 points, you lose. Once you enter the game, you can place a bet.</string>
 </resources>
