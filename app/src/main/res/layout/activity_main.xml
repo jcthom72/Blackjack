@@ -15,7 +15,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/welcome"
-        android:textSize="18sp"
+        android:textSize="24sp"
         android:textColor="#CC4748"
         android:paddingLeft="10dp"
         android:layout_alignParentTop="true"
@@ -57,7 +57,7 @@
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:srcCompat="@drawable/menuimageb"
+        app:srcCompat="@drawable/menuitemb"
         android:layout_centerHorizontal="true"
         android:id="@+id/imageView13"
         android:layout_below="@+id/button3" />
