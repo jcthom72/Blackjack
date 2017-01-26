@@ -16,7 +16,7 @@
             android:text="@string/details"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/button5"
+            android:id="@+id/ExtraInformation"
             android:layout_weight="1"
             android:background="#006B3C"
             android:textSize="24sp" />
@@ -39,6 +39,13 @@
             android:layout_alignParentEnd="true"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/blackjack"
+            android:id="@+id/imageView5"
             android:layout_weight="1" />
     </LinearLayout>
 

@@ -15,23 +15,24 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/welcome"
-        android:textSize="24sp"
+        android:textSize="18sp"
         android:textColor="#CC4748"
         android:paddingLeft="10dp"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:paddingRight="10dp" />
+        android:paddingRight="10dp"
+        android:layout_above="@+id/PlayGame" />
 
     <Button
         android:text="@string/game"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/button2"
+        android:id="@+id/PlayGame"
         android:background="#1E2A8d"
         android:textColor="#CC4748"
         android:textSize="30sp"
-        android:layout_above="@+id/button3"
+        android:layout_above="@+id/LearnMore"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_marginBottom="33dp" />
@@ -40,7 +41,7 @@
         android:text="@string/website"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/button3"
+        android:id="@+id/LearnMore"
         android:background="#1E2A8d"
         android:textColor="#CC4748"
         android:textSize="30sp"
@@ -60,6 +61,6 @@
         app:srcCompat="@drawable/menuitemb"
         android:layout_centerHorizontal="true"
         android:id="@+id/imageView13"
-        android:layout_below="@+id/button3" />
+        android:layout_below="@+id/LearnMore" />
 
 </RelativeLayout>

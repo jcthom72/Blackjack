@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+<ScrollView xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:id="@+id/Scroll"
@@ -27,18 +28,19 @@
     <Spinner
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/spinner"
+        android:id="@+id/bettingSpinner"
         android:layout_below="@+id/textView"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 
     <RelativeLayout
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/spinner">
+        android:layout_below="@+id/bettingSpinner"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true">
 
         <TextView
             android:text="@string/gameInstruction"
@@ -50,41 +52,32 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="?android:attr/windowBackground"
-            android:layout_alignParentBottom="true"
-            android:layout_alignRight="@+id/textView"
-            android:layout_alignEnd="@+id/textView"
-            android:layout_marginBottom="158dp"
-            android:id="@+id/imageView3" />
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             app:srcCompat="@drawable/cardback"
-            android:id="@+id/imageView"
-            android:layout_marginLeft="44dp"
-            android:layout_marginStart="44dp"
-            android:layout_above="@+id/imageView3"
-            android:layout_toRightOf="@+id/textView10"
-            android:layout_toEndOf="@+id/textView10" />
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:srcCompat="@drawable/cardback"
-            android:id="@+id/imageView2"
+            android:id="@+id/faceDown1"
             android:layout_marginRight="80dp"
             android:layout_marginEnd="80dp"
-            android:layout_above="@+id/textView11"
+            android:layout_above="@+id/PlayerScore"
             android:layout_toLeftOf="@+id/textView12"
             android:layout_toStartOf="@+id/textView12" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/cardback"
+            android:id="@+id/faceDown2"
+            android:layout_marginTop="19dp"
+            android:layout_below="@+id/textView4"
+            android:layout_toRightOf="@+id/textView10"
+            android:layout_toEndOf="@+id/textView10"
+            android:layout_marginLeft="41dp"
+            android:layout_marginStart="41dp" />
 
         <TextView
             android:text="@string/player"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/textView10"
-            android:layout_below="@+id/imageView"
+            android:layout_below="@+id/faceDown2"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_marginTop="9dp" />
@@ -103,7 +96,7 @@
             android:text="@string/playerScore"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/textView11"
+            android:id="@+id/PlayerScore"
             android:layout_below="@+id/textView10"
             android:layout_alignRight="@+id/textView4"
             android:layout_alignEnd="@+id/textView4"
@@ -117,11 +110,44 @@
             android:text="00"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
+            android:id="@+id/DealerScore"
+            android:layout_alignBaseline="@+id/PlayerScore"
+            android:layout_alignBottom="@+id/PlayerScore"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
-            android:layout_marginBottom="110dp"
-            android:id="@+id/textView2" />
+            android:layout_marginRight="6dp"
+            android:layout_marginEnd="6dp" />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/PlayerScore"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true">
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_marginBottom="6dp"
+                android:id="@+id/Hit"
+                android:text="HIT"
+                android:layout_weight="1" />
+
+            <Button
+                android:text="STAND"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/Stand"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:layout_weight="1" />
+
+        </LinearLayout>
 
     </RelativeLayout>
 
