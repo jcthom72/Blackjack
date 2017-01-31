@@ -10,4 +10,8 @@
     <string name="player">Player Score</string>
     <string name="gameInstruction">Click both stacks of cards to begin your turn.</string>
     <string name="bettingInstruction">Choose Betting Amount</string>
+    <string name="hit">HIT</string>
+    <string name="stand">STAND</string>
+    <string name="dealer_s_hand">Dealer\'s Hand</string>
+    <string name="playerHand">Player\'s Hand</string>
 </resources>
