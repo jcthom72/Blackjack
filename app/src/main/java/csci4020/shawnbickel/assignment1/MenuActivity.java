@@ -1,12 +1,13 @@
-package csci4020.shawnbickel.assignment1.blackjack;
+package csci4020.shawnbickel.assignment1;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import csci4020.shawnbickel.assignment1.blackjack.R;
 
-public class MainActivity extends AppCompatActivity {
+public class MenuActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
         PlayGame.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
-                Intent a  = new Intent (MainActivity.this, BlackjackGame.class);
+                Intent a  = new Intent (MenuActivity.this, GameImplementation.class);
                 startActivity(a);
             }
         });
@@ -29,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
         MoreInformation.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
-                Intent b  = new Intent (MainActivity.this, BlackJackDetails.class);
+                Intent b  = new Intent (MenuActivity.this, BlackJackDetails.class);
                 startActivity(b);
             }
         });
