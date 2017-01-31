@@ -50,7 +50,21 @@ public class GameImplementation extends AppCompatActivity {
             updateGUI(dealer);
 
             if(game.getDealer().hasBlackJack()){
-                //dealer wins
+                if(game.getPlayer().hasBlackJack()){
+                    if(game.getPlayer().viewHand().size() > game.getDealer().viewHand().size()){
+                        //dealer wins
+                    }
+                    else if(game.getPlayer().viewHand().size() < game.getDealer().viewHand().size()){
+                        //player wins
+                    }
+
+                    else{
+                        //push
+                    }
+                }
+                else{
+                    //dealer wins
+                }
             }
 
             else{
