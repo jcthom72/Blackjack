@@ -1,11 +1,13 @@
 package csci4020.shawnbickel.assignment1;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+
 import csci4020.shawnbickel.assignment1.blackjack.R;
 
 public class GameImplementation extends AppCompatActivity {
     BlackJackGame game = new BlackJackGame();
+    BlackJackGame.Player player1 = new BlackJackGame.Player();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -1,5 +1,7 @@
 package csci4020.shawnbickel.assignment1;
 
+import java.util.Vector;
+
 /**
  * Created by sbickel20 on 1/30/17.
  */
