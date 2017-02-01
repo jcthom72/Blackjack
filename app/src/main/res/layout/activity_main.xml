@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="csci4020.shawnbickel.assignment1.blackjack.MainActivity"
+    tools:context="csci4020.shawnbickel.assignment1.blackjack.MenuActivity"
     android:baselineAligned="false"
     android:background="#1E2A8d"
     android:theme="@style/ThemeOverlay.AppCompat.Dark">
@@ -59,8 +59,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:srcCompat="@drawable/menuitemb"
-        android:layout_centerHorizontal="true"
+        android:scaleType="fitXY"
         android:id="@+id/imageView13"
-        android:layout_below="@+id/LearnMore" />
+        android:layout_below="@+id/LearnMore"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
 </RelativeLayout>
