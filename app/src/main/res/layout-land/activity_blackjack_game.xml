@@ -5,7 +5,8 @@
     android:id="@+id/activity_black_jack_details"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="csci4020.shawnbickel.assignment1.BlackJackDetails">
+    tools:context="csci4020.shawnbickel.assignment1.BlackJackDetails"
+    android:background="#0A8E69">
 
 
     <RelativeLayout
@@ -59,22 +60,22 @@
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:srcCompat="@drawable/cardback"
-                    android:id="@+id/faceDownDealer1"
-                    android:layout_centerVertical="true"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentStart="true" />
+                    app:srcCompat="@drawable/dealerfacedowntwo"
+                    android:id="@+id/faceDownDealer2"
+                    android:layout_alignParentTop="true"
+                    android:layout_toRightOf="@+id/textView2"
+                    android:layout_toEndOf="@+id/textView2" />
 
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:srcCompat="@drawable/dealerfacedowntwo"
-                    android:id="@+id/faceDownDealer2"
-                    android:layout_marginLeft="82dp"
-                    android:layout_marginStart="82dp"
+                    app:srcCompat="@drawable/dealerfacedownone"
+                    android:id="@+id/faceDownDealer1"
+                    android:layout_marginLeft="81dp"
+                    android:layout_marginStart="81dp"
                     android:layout_alignParentTop="true"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentStart="true" />
+                    android:layout_toRightOf="@+id/textView2"
+                    android:layout_toEndOf="@+id/textView2" />
 
 
             </RelativeLayout>
@@ -94,22 +95,22 @@
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:srcCompat="@drawable/playerfacedownone"
-                    android:id="@+id/faceDownPlayer1"
+                    app:srcCompat="@drawable/playerfacedowntwo"
+                    android:id="@+id/faceDownPlayer2"
                     android:layout_alignParentTop="true"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentStart="true" />
+                    android:layout_toRightOf="@+id/textview3"
+                    android:layout_toEndOf="@+id/textview3"
+                    android:layout_marginLeft="86dp"
+                    android:layout_marginStart="86dp" />
 
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:srcCompat="@drawable/playerfacedowntwo"
-                    android:id="@+id/faceDownPlayer2"
-                    android:layout_marginLeft="71dp"
-                    android:layout_marginStart="71dp"
+                    app:srcCompat="@drawable/playerfacedownone"
+                    android:id="@+id/faceDownPlayer1"
                     android:layout_alignParentTop="true"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentStart="true" />
+                    android:layout_toRightOf="@+id/textview3"
+                    android:layout_toEndOf="@+id/textview3" />
 
             </RelativeLayout>
 
