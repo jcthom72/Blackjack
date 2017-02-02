@@ -19,7 +19,7 @@
             android:id="@+id/ExtraInformation"
             android:layout_weight="1"
             android:background="#006B3C"
-            android:textSize="24sp" />
+            android:textSize="20sp" />
 
     </LinearLayout>
 
@@ -40,7 +40,7 @@
             android:layout_alignParentEnd="true"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
-            android:layout_weight="1" />
+            android:layout_weight="0.47" />
 
         <ImageView
             android:layout_width="match_parent"

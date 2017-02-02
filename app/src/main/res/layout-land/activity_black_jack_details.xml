@@ -32,11 +32,11 @@
 
         <ImageView
             android:layout_width="match_parent"
-            android:layout_height="136dp"
+            android:layout_height="90dp"
             app:srcCompat="@drawable/moreinformationimage"
             android:scaleType="fitXY"
             android:id="@+id/imageView4"
-            android:layout_weight=".50"/>
+            android:layout_weight="0.21" />
 
         <ImageView
             android:layout_width="match_parent"
