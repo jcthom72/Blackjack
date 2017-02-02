@@ -5,6 +5,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+
+import csci4020.shawnbickel.assignment1.blackjack.GameActivity;
 import csci4020.shawnbickel.assignment1.blackjack.R;
 
 public class MenuActivity extends AppCompatActivity {
@@ -21,7 +23,7 @@ public class MenuActivity extends AppCompatActivity {
         PlayGame.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
-                Intent a  = new Intent (MenuActivity.this, GameImplementation.class);
+                Intent a  = new Intent (MenuActivity.this, GameActivity.class);
                 startActivity(a);
             }
         });
