@@ -21,7 +21,7 @@ public class MenuActivity extends AppCompatActivity {
         PlayGame.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
-                Intent a  = new Intent (MenuActivity.this, GameImplementation.class);
+                Intent a  = new Intent (MenuActivity.this, GameActivity.class);
                 startActivity(a);
             }
         });
