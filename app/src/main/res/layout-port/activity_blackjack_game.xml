@@ -62,11 +62,11 @@
                     android:layout_height="wrap_content"
                     app:srcCompat="@drawable/dealerfacedowntwo"
                     android:id="@+id/faceDownDealer2"
-                    android:layout_marginLeft="114dp"
-                    android:layout_marginStart="114dp"
                     android:layout_alignParentTop="true"
                     android:layout_toRightOf="@+id/textView2"
-                    android:layout_toEndOf="@+id/textView2" />
+                    android:layout_toEndOf="@+id/textView2"
+                    android:layout_marginLeft="106dp"
+                    android:layout_marginStart="106dp" />
 
                 <ImageView
                     android:layout_width="wrap_content"
@@ -75,7 +75,9 @@
                     android:id="@+id/faceDownDealer1"
                     android:layout_alignParentTop="true"
                     android:layout_toRightOf="@+id/textView2"
-                    android:layout_toEndOf="@+id/textView2" />
+                    android:layout_toEndOf="@+id/textView2"
+                    android:layout_marginLeft="24dp"
+                    android:layout_marginStart="24dp" />
 
 
             </RelativeLayout>
@@ -97,8 +99,8 @@
                     android:layout_height="wrap_content"
                     app:srcCompat="@drawable/playerfacedownone"
                     android:id="@+id/faceDownPlayer1"
-                    android:layout_marginLeft="117dp"
-                    android:layout_marginStart="117dp"
+                    android:layout_marginLeft="118dp"
+                    android:layout_marginStart="118dp"
                     android:layout_alignParentTop="true"
                     android:layout_toRightOf="@+id/textview3"
                     android:layout_toEndOf="@+id/textview3" />
@@ -110,7 +112,9 @@
                     android:id="@+id/faceDownPlayer2"
                     android:layout_alignParentTop="true"
                     android:layout_toRightOf="@+id/textview3"
-                    android:layout_toEndOf="@+id/textview3" />
+                    android:layout_toEndOf="@+id/textview3"
+                    android:layout_marginLeft="14dp"
+                    android:layout_marginStart="14dp" />
 
             </RelativeLayout>
 
