@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
-import csci4020.shawnbickel.assignment1.blackjack.GameActivity;
 import csci4020.shawnbickel.assignment1.blackjack.R;
 
 public class MenuActivity extends AppCompatActivity {
