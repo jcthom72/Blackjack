@@ -233,6 +233,8 @@ public class BlackJackGame {
         /*a dealer is a player; however, the bank, bet
 		members should be ignored*/
         dealer = new Player();
+
+        deck = new Deck();
     }
 
     /*returns the player (player1)*/

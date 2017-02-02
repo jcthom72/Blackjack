@@ -197,6 +197,7 @@ public class GameActivity extends AppCompatActivity {
     }
 
     private void updateGUI(BlackJackGame.Player player) {
+        /*
         if (player == dealer){
             dealerScore.setText(player.getScore());
 
@@ -204,6 +205,7 @@ public class GameActivity extends AppCompatActivity {
             playerScore.setText(player.getScore());
         }
 
+        */
     }
 }
 
