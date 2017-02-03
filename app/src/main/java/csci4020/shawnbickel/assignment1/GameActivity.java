@@ -3,6 +3,7 @@ package csci4020.shawnbickel.assignment1;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -15,7 +16,7 @@ import csci4020.shawnbickel.assignment1.blackjack.R;
  * Created by Judson Thomas on 2/1/17.
  */
 
-public class GameActivity extends AppCompatActivity {
+public class GameActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
     // variables
     private BlackJackGame game;
     private BlackJackGame.Player player;
@@ -28,6 +29,7 @@ public class GameActivity extends AppCompatActivity {
     private ImageView dealerImage2;
     private Button hitButton;
     private Button standButton;
+    private Spinner bet;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,7 +48,7 @@ public class GameActivity extends AppCompatActivity {
         standButton = (Button) findViewById(R.id.Stand);
 
         // Spinner provided a list of betting choices for the user to choose from
-        Spinner bet = (Spinner) findViewById(R.id.bettingSpinner);
+        bet = (Spinner) findViewById(R.id.bettingSpinner);
 
         // ArrayAdapter populates the spinner with the contents of a string array
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
@@ -54,6 +56,7 @@ public class GameActivity extends AppCompatActivity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         assert bet != null;
         bet.setAdapter(adapter);
+        bet.setOnItemSelectedListener(this);
 
 
         //set on click listeners
@@ -64,6 +67,7 @@ public class GameActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
                     /*hit button will trigger hit event*/
+                    bet.setEnabled(false);
                     hitEvent();
                 }
             });
@@ -75,6 +79,8 @@ public class GameActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
                     /*stand button will trigger stand event*/
+                    hitButton.setEnabled(false);
+                    standButton.setEnabled(false);
                     standEvent();
                 }
             });
@@ -93,6 +99,9 @@ public class GameActivity extends AppCompatActivity {
     * a start button but probably should just be triggered by onCreate; also
     * triggered by resetGameEvent*/
     private void startGameEvent() {
+        hitButton.setEnabled(true);
+        standButton.setEnabled(true);
+        bet.setEnabled(true);
         game.deal(player);
         game.deal(dealer);
         updateGUI(player);
@@ -124,7 +133,7 @@ public class GameActivity extends AppCompatActivity {
     * case whenever a natural blackjack is dealt to the player*/
     private void standEvent(){
         player.stand();
-        //disable hit button?
+        // disable hit button?
         updateGUI(player);
         game.revealHole();
         updateGUI(dealer);
@@ -206,6 +215,20 @@ public class GameActivity extends AppCompatActivity {
         }
 
         */
+    }
+
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        String betAmount = (String) parent.getItemAtPosition(position);
+        int bettingAmount = Integer.parseInt(betAmount);
+        boolean betTest = player.wager(bettingAmount);
+        if (!betTest)
+            betTest = player.wager(0);
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+
     }
 }
 

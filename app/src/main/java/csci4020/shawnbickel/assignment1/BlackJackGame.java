@@ -136,7 +136,7 @@ public class BlackJackGame {
         /*methods*/
 
         private Player(){
-            bank = 0;
+            bank = 50000;
             bet = 0;
             score = 0;
             isStanding = false;
