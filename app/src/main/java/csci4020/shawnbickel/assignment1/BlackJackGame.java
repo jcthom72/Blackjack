@@ -26,7 +26,7 @@ public class BlackJackGame {
 
         /*here I define rank as the type of card (1, 2, queen, etc.); this might
         * not be the correct term*/
-        public enum Rank{MYSTERY, ACE, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, JACK, KING, QUEEN}
+        public enum Rank{MYSTERY, ACE, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, KING, QUEEN}
 
         protected Suit suit;
         protected Rank rank;
@@ -48,9 +48,10 @@ public class BlackJackGame {
                 case SEVEN: value = 7; break;
                 case EIGHT: value = 8; break;
                 case NINE: value = 9; break;
-                case JACK: value = 10; break;
-                case KING: value = 11; break;
-                case QUEEN: value = 12; break;
+                case TEN: value = 10; break;
+                case JACK: value = 11; break;
+                case KING: value = 12; break;
+                case QUEEN: value = 13; break;
             }
         }
 
@@ -103,7 +104,7 @@ public class BlackJackGame {
 
         private Stack<Card> deck;
 
-        private Deck(){
+        Deck(){
             deck = new Stack<Card>();
             deck.addAll(Arrays.asList(CARDS));
             Collections.shuffle(deck); /*randomly shuffles our deck*/
