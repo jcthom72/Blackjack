@@ -139,9 +139,9 @@ public class GameActivity extends AppCompatActivity {
         player.stand();
         // disable hit button?
         //standButton.setEnabled(false);
-        //updateGUI(player);
+        updateGUI(player);
         game.revealHole();
-        //updateGUI(dealer);
+        updateGUI(dealer);
 
         if(dealer.hasBlackJack()){
             if(player.hasBlackJack()){
