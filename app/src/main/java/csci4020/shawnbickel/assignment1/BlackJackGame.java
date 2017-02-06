@@ -38,8 +38,7 @@ public class BlackJackGame {
 
             switch(rank){
                 case MYSTERY: value = -1; break;
-                case ACE: value = 1; break;
-                case ONE: value = 1; break; /*aces are initialized to 1 by default*/
+                case ACE: value = 1; break; /*aces are initialized to 1 by default*/
                 case TWO: value = 2; break;
                 case THREE: value = 3; break;
                 case FOUR: value = 4; break;
@@ -48,10 +47,9 @@ public class BlackJackGame {
                 case SEVEN: value = 7; break;
                 case EIGHT: value = 8; break;
                 case NINE: value = 9; break;
-                case TEN: value = 10; break;
-                case JACK: value = 11; break;
-                case KING: value = 12; break;
-                case QUEEN: value = 13; break;
+                case JACK: value = 10; break;
+                case KING: value = 10; break;
+                case QUEEN: value = 10; break;
             }
         }
 
@@ -104,7 +102,7 @@ public class BlackJackGame {
 
         private Stack<Card> deck;
 
-        Deck(){
+        private Deck(){
             deck = new Stack<Card>();
             deck.addAll(Arrays.asList(CARDS));
             Collections.shuffle(deck); /*randomly shuffles our deck*/
