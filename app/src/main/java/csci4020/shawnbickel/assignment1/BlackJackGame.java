@@ -167,6 +167,7 @@ public class BlackJackGame {
             }
 
             hand.add(drawnCard);
+            score += drawnCard.getValue();
             return true;
         }
 
@@ -304,13 +305,13 @@ public class BlackJackGame {
         //reset player
         player1.bet = 0;
         player1.isStanding = false;
-        player1.hand = null;
+        player1.hand.clear();
         player1.score = 0;
 
         //reset dealer
         //dealer's bet does not need to be reset as it is ignored
         dealer.isStanding = false;
-        dealer.hand = null;
+        dealer.hand.clear();
         dealer.score = 0;
     }
 }
