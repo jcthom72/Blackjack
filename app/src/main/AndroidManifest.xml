@@ -10,13 +10,13 @@
         android:theme="@style/AppTheme">
         <activity android:name="csci4020.shawnbickel.assignment1.MenuActivity">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity android:name="csci4020.shawnbickel.assignment1.BlackJackDetails" />
-        <activity android:name="csci4020.shawnbickel.assignment1.GameImplementation">
-
+        <activity android:name="csci4020.shawnbickel.assignment1.GameActivity">
         </activity>
     </application>
 
