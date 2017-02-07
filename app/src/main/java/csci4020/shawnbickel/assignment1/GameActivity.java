@@ -32,7 +32,6 @@ public class GameActivity extends AppCompatActivity {
     private Spinner bet;
     private Vector<ImageView> playerCardImages;
     private Vector<ImageView> dealerCardImages;
-    private final String DATA_FILENAME = "Notes.txt";
     private final int PLAYERWINS = 1;
     private final int DEALERWINS = 2;
     private final int PUSH = 3;
@@ -42,9 +41,10 @@ public class GameActivity extends AppCompatActivity {
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         /*initialize views*/
         setContentView(R.layout.activity_blackjack_game);
+
+
 
         // connects variable names to widget ids in the activity layout
         playerScore = (TextView) findViewById(R.id.PlayerScore);
@@ -89,7 +89,6 @@ public class GameActivity extends AppCompatActivity {
         game = new BlackJackGame();
         player = game.getPlayer(); /*grab reference to dealer for convenience*/
         dealer = game.getDealer(); /*grab reference to player1 for convenience*/
-
         //start game
         startGameEvent();
     }
@@ -439,6 +438,7 @@ public class GameActivity extends AppCompatActivity {
         //to bypass missing return statement error
         return 0;
     }
+
 
     /*used to repurpose the hit button to serve as a start button / restart button, etc.*/
     void setHitButtonPurpose(int purpose) {

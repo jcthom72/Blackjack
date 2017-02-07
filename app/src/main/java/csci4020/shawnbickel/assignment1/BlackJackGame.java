@@ -11,8 +11,8 @@ import java.util.Vector;
 
 public class BlackJackGame {
     /*data members*/
-    private final Player player1;
-    private final Player dealer;
+    private  Player player1;
+    private  Player dealer;
     private Deck deck;
 
     /*inner classes*/
@@ -213,14 +213,26 @@ public class BlackJackGame {
             return score;
         }
 
+        public void setScore(int score){
+            this.score = score;
+        }
+
         /*bank accessor*/
         public int getBank(){
             return bank;
         }
 
+        public void setBank(int bank){
+            this.bank = bank;
+        }
+
         /*bet accessor*/
         public int getBet(){
             return bet;
+        }
+
+        public void setBet(int bet){
+            this.bet = bet;
         }
     }
 
@@ -241,9 +253,17 @@ public class BlackJackGame {
         return player1;
     }
 
+    public void setPlayer1(Player player1) {
+        this.player1 = player1;
+    }
+
     /*returns the dealer*/
     public final Player getDealer(){
         return dealer;
+    }
+
+    public void setDealer(Player dealer){
+        this.dealer = dealer;
     }
 
     /*gifts the bet amount to player1's bank; used when
