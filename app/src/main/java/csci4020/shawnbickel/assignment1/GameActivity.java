@@ -36,6 +36,7 @@ public class GameActivity extends AppCompatActivity {
     private Spinner bet;
     private Vector<ImageView> playerCardImages;
     private Vector<ImageView> dealerCardImages;
+    private final String DATA_FILENAME = "Notes.txt";
     private final int PLAYERWINS = 1;
     private final int DEALERWINS = 2;
     private final int PUSH = 3;

@@ -48,7 +48,8 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight=".20">
+                android:layout_weight=".20"
+                android:id="@+id/dealersHand">
 
                 <TextView
                     android:text="@string/dealer_s_hand"
@@ -85,7 +86,8 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight=".20">
+                android:layout_weight=".20"
+                android:id="@+id/playersHand">
 
                 <TextView
                     android:text="@string/playerHand"
