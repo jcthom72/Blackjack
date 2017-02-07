@@ -36,16 +36,16 @@ public class GameActivity extends AppCompatActivity {
     private Spinner bet;
     private Vector<ImageView> playerCardImages;
     private Vector<ImageView> dealerCardImages;
-    private final String DATA_FILENAME = "Notes.txt";
     private final int PLAYERWINS = 1;
     private final int DEALERWINS = 2;
     private final int PUSH = 3;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         /*initialize views*/
         setContentView(R.layout.activity_blackjack_game);
+
+
 
         // connects variable names to widget ids in the activity layout
         playerImage1 = (ImageView) findViewById(R.id.faceDownPlayer1);
@@ -97,7 +97,6 @@ public class GameActivity extends AppCompatActivity {
         game = new BlackJackGame();
         player = game.getPlayer(); /*grab reference to dealer for convenience*/
         dealer = game.getDealer(); /*grab reference to player1 for convenience*/
-
         //start game
         startGameEvent();
     }
@@ -446,6 +445,79 @@ public class GameActivity extends AppCompatActivity {
 
         //to bypass missing return statement error
         return 0;
+    }
+
+
+    // saves the state of the variables used in the game
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        int PLayerscore = player.getScore();
+        int Dealerscore = dealer.getScore();
+        int PlayerBank = player.getBank();
+        int PlayerBet = player.getBet();
+        boolean standingP = player.isStanding();
+        boolean standingD = dealer.isStanding();
+        boolean bustedP = player.isBusted();
+        boolean bustedD = dealer.isBusted();
+        boolean blackjackP = player.hasBlackJack();
+        boolean blackjackD = dealer.hasBlackJack();
+
+        outState.putInt("playerScore", PLayerscore);
+        outState.putInt("dealerScore", Dealerscore);
+        outState.putInt("playerBet", PlayerBet);
+        outState.putInt("playerBank", PlayerBank);
+        outState.putBoolean("playerStanding", standingP);
+        outState.putBoolean("dealerStanding", standingD);
+        outState.putBoolean("playerBusted", bustedP);
+        outState.putBoolean("dealerBusted", bustedD);
+        super.onSaveInstanceState(outState);
+    }
+
+    /* onRestoreInstanceState restores the values saved by onSaveInstanceState to the proper
+     variables so that the transition to a different screen orientation is as seamless as possible */
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState){
+        super.onRestoreInstanceState(savedInstanceState);
+        try{
+            int ps = savedInstanceState.getInt("playerScore");
+            String playerscore = Integer.toString(ps);
+            playerScore.setText(playerscore);
+
+            int ds = savedInstanceState.getInt("dealerScore");
+            String dealerscore = Integer.toString(ds);
+            dealerScore.setText(dealerscore);
+
+            int pb = savedInstanceState.getInt("playerBet");
+            player.setBet(pb);
+
+            int pbank = savedInstanceState.getInt("playerBank");
+            player.setBank(pbank);
+
+            boolean pstanding = savedInstanceState.getBoolean("playerStanding");
+            if (pstanding){
+                player.stand();
+            }
+
+            boolean dstanding = savedInstanceState.getBoolean("dealerStanding");
+            if (dstanding){
+                dealer.stand();
+            }
+
+            boolean pbusted = savedInstanceState.getBoolean("bustedP");
+            if (pbusted){
+                player.stand();
+            }
+
+            boolean dbusted = savedInstanceState.getBoolean("bustedD");
+            if (dbusted){
+                dealer.stand();
+            }
+
+
+        }catch (NullPointerException ignored){
+
+        }
+
     }
 }
 
