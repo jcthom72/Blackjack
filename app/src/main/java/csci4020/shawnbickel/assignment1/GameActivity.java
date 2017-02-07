@@ -7,8 +7,10 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.Vector;
 
@@ -34,6 +36,10 @@ public class GameActivity extends AppCompatActivity {
     private Spinner bet;
     private Vector<ImageView> playerCardImages;
     private Vector<ImageView> dealerCardImages;
+    private final String DATA_FILENAME = "Notes.txt";
+    private final int PLAYERWINS = 1;
+    private final int DEALERWINS = 2;
+    private final int PUSH = 3;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,22 +69,16 @@ public class GameActivity extends AppCompatActivity {
 
         //initialize image view vectors
         playerCardImages = new Vector<ImageView>();
+        playerCardImages.add(playerImage1);
+        playerCardImages.add(playerImage2);
+
         dealerCardImages = new Vector<ImageView>();
+        dealerCardImages.add(dealerImage1);
+        dealerCardImages.add(dealerImage2);
 
 
         //set on click listeners
 
-        //hooking up hitEvent to hitButton's onClickListener
-        if(hitButton != null) {
-            hitButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    /*hit button will trigger hit event*/
-                    //bet.setEnabled(false);
-                    hitEvent();
-                }
-            });
-        }
 
         //hooking up standEvent to standButton's onClickListener
         if(standButton != null) {
@@ -106,9 +106,20 @@ public class GameActivity extends AppCompatActivity {
     * a start button but probably should just be triggered by onCreate; also
     * triggered by resetGameEvent*/
     private void startGameEvent() {
-        //hitButton.setEnabled(true);
-        //standButton.setEnabled(true);
-        //bet.setEnabled(true);
+        hitButton.setText("HIT");
+        //hooking up hitEvent to hitButton's onClickListener
+        if(hitButton != null) {
+            hitButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    /*hit button will trigger hit event*/
+                    hitEvent();
+                }
+            });
+        }
+
+        int betAmount = Integer.parseInt(bet.getSelectedItem().toString());
+        player.wager(betAmount);
         game.deal(player);
         game.deal(dealer);
         updateGUI(player);
@@ -119,10 +130,13 @@ public class GameActivity extends AppCompatActivity {
             updateGUI(dealer);
             if(dealer.hasBlackJack()){
                 //push
+                GameWinEvent(PUSH);
             }
 
             else{
                 //player1 wins
+                game.giftBet();
+                GameWinEvent(PLAYERWINS);
             }
         }
     }
@@ -130,13 +144,34 @@ public class GameActivity extends AppCompatActivity {
     /*the event for the game restarting; should be triggered by a reset button; perhaps
     * we can change the hit button to turn into a reset button whenever the game ends*/
     private void resetGameEvent(){
+        //bet.setEnabled(false);   // prevents the user from changing bet after starting game
         game.reset();
         updateGUI(player);
         updateGUI(dealer);
-        /*playerImage1.setImageResource(R.drawable.playerfacedownone);
+
+        //update imageview vectors
+        //remove views from layout
+        RelativeLayout playerLayout = (RelativeLayout) findViewById(R.id.playersHand);
+        RelativeLayout dealerLayout = (RelativeLayout) findViewById(R.id.dealersHand);
+
+        for(View image : playerCardImages){
+            playerLayout.removeView(image);
+        }
+
+        for(View image : dealerCardImages){
+            dealerLayout.removeView(image);
+        }
+
+        playerCardImages.clear();
+        dealerCardImages.clear();
+        playerImage1.setImageResource(R.drawable.playerfacedownone);
         playerImage2.setImageResource(R.drawable.playerfacedowntwo);
         dealerImage1.setImageResource(R.drawable.dealerfacedownone);
-        dealerImage2.setImageResource(R.drawable.dealerfacedowntwo);*/
+        dealerImage2.setImageResource(R.drawable.dealerfacedowntwo);
+        playerCardImages.add(playerImage1);
+        playerCardImages.add(playerImage2);
+        dealerCardImages.add(dealerImage1);
+        dealerCardImages.add(dealerImage2);
         startGameEvent();
     }
 
@@ -154,17 +189,24 @@ public class GameActivity extends AppCompatActivity {
             if(player.hasBlackJack()){
                 if(player.viewHand().size() > dealer.viewHand().size()){
                     //dealer wins
+                    game.deductBet();
+                    GameWinEvent(DEALERWINS);
                 }
                 else if(player.viewHand().size() < dealer.viewHand().size()){
                     //player wins
+                    game.giftBet();
+                    GameWinEvent(PLAYERWINS);
                 }
 
                 else{
                     //push
+                    GameWinEvent(PUSH);
                 }
             }
             else{
                 //dealer wins
+                game.deductBet();
+                GameWinEvent(DEALERWINS);
             }
         }
 
@@ -180,18 +222,25 @@ public class GameActivity extends AppCompatActivity {
             //game over, determine winner
             if(dealer.isBusted()){
                 //player1 wins
+                game.giftBet();
+                GameWinEvent(PLAYERWINS);
             }
 
             else if(dealer.getScore() < player.getScore()){
                 //player1 wins
+                game.giftBet();
+                GameWinEvent(PLAYERWINS);
             }
 
             else if(dealer.getScore() == player.getScore()){
                 //push
+                GameWinEvent(PUSH);
             }
 
             else{ /*dealer's score is higher than player1's score*/
                 //dealer wins
+                game.deductBet();
+                GameWinEvent(DEALERWINS);
             }
         }
     }
@@ -201,10 +250,14 @@ public class GameActivity extends AppCompatActivity {
         player.hit();
         updateGUI(player);
         if(player.isBusted()){
+            //dealer wins
+
+
             //disable button?
             game.deductBet();
             updateGUI(player);
             //etc. etc.
+            GameWinEvent(DEALERWINS);
             return;
         }
 
@@ -215,10 +268,39 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
+    private void GameWinEvent(int winIndicator){
+        //bet.setEnabled(true);  // allows the user to enter a bet for next game
+        String winText = "Player wins";
+        if (winIndicator == 1){
+            winText = "player 1 wins";
+        }
+
+        else if (winIndicator == 2){
+            winText = "dealer wins";
+        }
+
+        else if (winIndicator == 3){
+            winText = "tie";
+        }
+
+        Toast t = Toast.makeText(this, winText, Toast.LENGTH_LONG);
+        t.show();
+
+        //repurpose hit button to new game button
+        hitButton.setText("New Game");
+        hitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                resetGameEvent();
+            }
+        });
+
+    }
+
     /* updateGUI updates player and dealer's scores as well as the images at different points
         during the BlackJackGame */
     private void updateGUI(BlackJackGame.Player playerToUpdate) {
-        float cardPadding = 50;
+        float cardPadding = 100;
         Vector<ImageView> imagesToUpdate;
         TextView scoreToUpdate;
 
@@ -244,6 +326,20 @@ public class GameActivity extends AppCompatActivity {
         Vector<BlackJackGame.Card> hand = playerToUpdate.viewHand();
         BlackJackGame.Card card;
         ImageView cardImage;
+        RelativeLayout layout;
+
+        if(playerToUpdate == player) {
+            layout = (RelativeLayout) findViewById(R.id.playersHand);
+        }
+
+        else if(playerToUpdate == dealer){
+            layout = (RelativeLayout) findViewById(R.id.dealersHand);
+        }
+
+        else{
+            /*error occurred*/
+            return;
+        }
 
         if(hand.size() > 0) {
             for (int i = 0; i < hand.size(); i++) {
@@ -262,14 +358,17 @@ public class GameActivity extends AppCompatActivity {
                         cardImage.setY(imagesToUpdate.lastElement().getY());
                     }
 
-                    else{
-                        /*set X / Y to initial card position*/
-                        cardImage.setX(100f); //test value
-                        cardImage.setY(100f); //test value
-                    }
+                    //else{
+                    ///*set X / Y to initial card position*/
+                    //cardImage.setX(100f); //test value
+                    //cardImage.setY(100f); //test value
+                    //}
                     cardImage.setImageResource(cardToImage(hand.elementAt(i)));
                     cardImage.setEnabled(true);
+                    cardImage.setVisibility(View.VISIBLE);
+                    layout.addView(cardImage);
                     imagesToUpdate.add(cardImage);
+
                 }
             }
         }
