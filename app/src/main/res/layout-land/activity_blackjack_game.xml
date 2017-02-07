@@ -58,28 +58,6 @@
                     android:id="@+id/textView2"
                     android:textSize="18sp" />
 
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:srcCompat="@drawable/dealerfacedownone"
-                    android:id="@+id/faceDownDealer1"
-                    android:layout_marginLeft="198dp"
-                    android:layout_marginStart="198dp"
-                    android:layout_alignParentTop="true"
-                    android:layout_toRightOf="@+id/textView2"
-                    android:layout_toEndOf="@+id/textView2" />
-
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:srcCompat="@drawable/dealerfacedowntwo"
-                    android:id="@+id/faceDownDealer2"
-                    android:layout_alignParentTop="true"
-                    android:layout_toRightOf="@+id/textView2"
-                    android:layout_toEndOf="@+id/textView2"
-                    android:layout_marginLeft="39dp"
-                    android:layout_marginStart="39dp" />
-
 
             </RelativeLayout>
 
@@ -95,28 +73,6 @@
                     android:layout_height="wrap_content"
                     android:id="@+id/textview3"
                     android:textSize="18sp" />
-
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:srcCompat="@drawable/playerfacedownone"
-                    android:id="@+id/faceDownPlayer1"
-                    android:layout_marginLeft="178dp"
-                    android:layout_marginStart="178dp"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignLeft="@+id/faceDownPlayer2"
-                    android:layout_alignStart="@+id/faceDownPlayer2" />
-
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:srcCompat="@drawable/playerfacedowntwo"
-                    android:id="@+id/faceDownPlayer2"
-                    android:layout_marginLeft="45dp"
-                    android:layout_marginStart="45dp"
-                    android:layout_alignParentTop="true"
-                    android:layout_toRightOf="@+id/textview3"
-                    android:layout_toEndOf="@+id/textview3" />
 
             </RelativeLayout>
 

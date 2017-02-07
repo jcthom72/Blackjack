@@ -26,7 +26,7 @@ public class BlackJackGame {
 
         /*here I define rank as the type of card (1, 2, queen, etc.); this might
         * not be the correct term*/
-        public enum Rank{MYSTERY, ACE, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, KING, QUEEN}
+        public enum Rank{MYSTERY, ACE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, JACK, KING, QUEEN}
 
         protected Suit suit;
         protected Rank rank;
@@ -37,7 +37,7 @@ public class BlackJackGame {
             this.rank = rank;
 
             switch(rank){
-                case MYSTERY: value = -1; break;
+                case MYSTERY: value = 0; break;
                 case ACE: value = 1; break; /*aces are initialized to 1 by default*/
                 case TWO: value = 2; break;
                 case THREE: value = 3; break;
@@ -87,7 +87,6 @@ public class BlackJackGame {
         private static final Card MYSTERY_CARD = new Card(Card.Suit.MYSTERY, Card.Rank.MYSTERY);
         private final Card[] CARDS = new Card[] {
                 new Card(Card.Suit.DIAMONDS, Card.Rank.ACE),
-                new Card(Card.Suit.DIAMONDS, Card.Rank.ONE),
                 new Card(Card.Suit.DIAMONDS, Card.Rank.TWO),
                 new Card(Card.Suit.DIAMONDS, Card.Rank.THREE),
                 new Card(Card.Suit.DIAMONDS, Card.Rank.FOUR),
@@ -315,6 +314,7 @@ public class BlackJackGame {
 
         /*revealing the hole card is implemented by drawing a new card and replacing
         * the mystery card with the new card*/
+        dealer.hand.removeElementAt(1);
         dealer.drawCard();
         return true;
     }
@@ -322,6 +322,9 @@ public class BlackJackGame {
     /*resets the game: bets, hands, isStanding statuses, scores etc.
     * but does NOT reset the player's bank*/
     void reset(){
+        //reset deck
+        deck = new Deck();
+
         //reset player
         player1.bet = 0;
         player1.isStanding = false;

@@ -27,10 +27,6 @@ public class GameActivity extends AppCompatActivity {
     private BlackJackGame.Player dealer;
     private TextView dealerScore;
     private TextView playerScore;
-    private ImageView playerImage1;
-    private ImageView playerImage2;
-    private ImageView dealerImage1;
-    private ImageView dealerImage2;
     private Button hitButton;
     private Button standButton;
     private Spinner bet;
@@ -39,6 +35,9 @@ public class GameActivity extends AppCompatActivity {
     private final int PLAYERWINS = 1;
     private final int DEALERWINS = 2;
     private final int PUSH = 3;
+    private final int PURPOSE_NEW_GAME = 1;
+    private final int PURPOSE_HIT = 2;
+    private final int PURPOSE_NEXT_GAME = 3;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,10 +47,6 @@ public class GameActivity extends AppCompatActivity {
 
 
         // connects variable names to widget ids in the activity layout
-        playerImage1 = (ImageView) findViewById(R.id.faceDownPlayer1);
-        playerImage2 = (ImageView) findViewById(R.id.faceDownPlayer2);
-        dealerImage1 = (ImageView) findViewById(R.id.faceDownDealer1);
-        dealerImage2 = (ImageView) findViewById(R.id.faceDownDealer2);
         playerScore = (TextView) findViewById(R.id.PlayerScore);
         dealerScore = (TextView) findViewById(R.id.DealerScore);
         hitButton = (Button) findViewById(R.id.Hit);
@@ -69,17 +64,14 @@ public class GameActivity extends AppCompatActivity {
 
         //initialize image view vectors
         playerCardImages = new Vector<ImageView>();
-        playerCardImages.add(playerImage1);
-        playerCardImages.add(playerImage2);
-
         dealerCardImages = new Vector<ImageView>();
-        dealerCardImages.add(dealerImage1);
-        dealerCardImages.add(dealerImage2);
+
+        //remove the facedown card images from the screen
 
 
         //set on click listeners
-
-
+        setHitButtonPurpose(PURPOSE_NEW_GAME);
+        
         //hooking up standEvent to standButton's onClickListener
         if(standButton != null) {
             standButton.setOnClickListener(new View.OnClickListener() {
@@ -105,22 +97,20 @@ public class GameActivity extends AppCompatActivity {
     * a start button but probably should just be triggered by onCreate; also
     * triggered by resetGameEvent*/
     private void startGameEvent() {
-        hitButton.setText("HIT");
-        //hooking up hitEvent to hitButton's onClickListener
-        if(hitButton != null) {
-            hitButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    /*hit button will trigger hit event*/
-                    hitEvent();
-                }
-            });
-        }
+        //once game starts, set hit button to normal hit event behavior
+        hitButton.setEnabled(true);
+        setHitButtonPurpose(PURPOSE_HIT);
 
+        //enable stand button
+        standButton.setEnabled(true);
+
+        //get player bet
         int betAmount = Integer.parseInt(bet.getSelectedItem().toString());
         player.wager(betAmount);
+        
         game.deal(player);
         game.deal(dealer);
+        
         updateGUI(player);
         updateGUI(dealer);
 
@@ -129,13 +119,13 @@ public class GameActivity extends AppCompatActivity {
             updateGUI(dealer);
             if(dealer.hasBlackJack()){
                 //push
-                GameWinEvent(PUSH);
+                gameEndEvent(PUSH);
             }
 
             else{
                 //player1 wins
                 game.giftBet();
-                GameWinEvent(PLAYERWINS);
+                gameEndEvent(PLAYERWINS);
             }
         }
     }
@@ -143,34 +133,25 @@ public class GameActivity extends AppCompatActivity {
     /*the event for the game restarting; should be triggered by a reset button; perhaps
     * we can change the hit button to turn into a reset button whenever the game ends*/
     private void resetGameEvent(){
-        //bet.setEnabled(false);   // prevents the user from changing bet after starting game
         game.reset();
-        updateGUI(player);
-        updateGUI(dealer);
 
-        //update imageview vectors
-        //remove views from layout
+        //remove card images from layout
         RelativeLayout playerLayout = (RelativeLayout) findViewById(R.id.playersHand);
         RelativeLayout dealerLayout = (RelativeLayout) findViewById(R.id.dealersHand);
 
-        for(View image : playerCardImages){
+        //remove the added card images from the layout
+
+        for(ImageView image : playerCardImages){
             playerLayout.removeView(image);
         }
 
         for(View image : dealerCardImages){
             dealerLayout.removeView(image);
         }
-
+        //
         playerCardImages.clear();
         dealerCardImages.clear();
-        playerImage1.setImageResource(R.drawable.playerfacedownone);
-        playerImage2.setImageResource(R.drawable.playerfacedowntwo);
-        dealerImage1.setImageResource(R.drawable.dealerfacedownone);
-        dealerImage2.setImageResource(R.drawable.dealerfacedowntwo);
-        playerCardImages.add(playerImage1);
-        playerCardImages.add(playerImage2);
-        dealerCardImages.add(dealerImage1);
-        dealerCardImages.add(dealerImage2);
+
         startGameEvent();
     }
 
@@ -178,10 +159,13 @@ public class GameActivity extends AppCompatActivity {
     * case whenever a natural blackjack is dealt to the player*/
     private void standEvent(){
         player.stand();
-        // disable hit button?
-        //standButton.setEnabled(false);
-        updateGUI(player);
         game.revealHole();
+
+        // disable hit button and stand button
+        hitButton.setEnabled(false);
+        standButton.setEnabled(false);
+
+        updateGUI(player);
         updateGUI(dealer);
 
         if(dealer.hasBlackJack()){
@@ -189,23 +173,23 @@ public class GameActivity extends AppCompatActivity {
                 if(player.viewHand().size() > dealer.viewHand().size()){
                     //dealer wins
                     game.deductBet();
-                    GameWinEvent(DEALERWINS);
+                    gameEndEvent(DEALERWINS);
                 }
                 else if(player.viewHand().size() < dealer.viewHand().size()){
                     //player wins
                     game.giftBet();
-                    GameWinEvent(PLAYERWINS);
+                    gameEndEvent(PLAYERWINS);
                 }
 
                 else{
                     //push
-                    GameWinEvent(PUSH);
+                    gameEndEvent(PUSH);
                 }
             }
             else{
                 //dealer wins
                 game.deductBet();
-                GameWinEvent(DEALERWINS);
+                gameEndEvent(DEALERWINS);
             }
         }
 
@@ -222,24 +206,24 @@ public class GameActivity extends AppCompatActivity {
             if(dealer.isBusted()){
                 //player1 wins
                 game.giftBet();
-                GameWinEvent(PLAYERWINS);
+                gameEndEvent(PLAYERWINS);
             }
 
             else if(dealer.getScore() < player.getScore()){
                 //player1 wins
                 game.giftBet();
-                GameWinEvent(PLAYERWINS);
+                gameEndEvent(PLAYERWINS);
             }
 
             else if(dealer.getScore() == player.getScore()){
                 //push
-                GameWinEvent(PUSH);
+                gameEndEvent(PUSH);
             }
 
             else{ /*dealer's score is higher than player1's score*/
                 //dealer wins
                 game.deductBet();
-                GameWinEvent(DEALERWINS);
+                gameEndEvent(DEALERWINS);
             }
         }
     }
@@ -256,7 +240,7 @@ public class GameActivity extends AppCompatActivity {
             game.deductBet();
             updateGUI(player);
             //etc. etc.
-            GameWinEvent(DEALERWINS);
+            gameEndEvent(DEALERWINS);
             return;
         }
 
@@ -267,9 +251,10 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
-    private void GameWinEvent(int winIndicator){
-        //bet.setEnabled(true);  // allows the user to enter a bet for next game
-        String winText = "Player wins";
+    /*the event for the game ending; triggered by a win / loss / push*/
+    private void gameEndEvent(int winIndicator){
+        String winText;
+        
         if (winIndicator == 1){
             winText = "player 1 wins";
         }
@@ -281,25 +266,26 @@ public class GameActivity extends AppCompatActivity {
         else if (winIndicator == 3){
             winText = "tie";
         }
+        
+        else {
+            /*invalid winIndicator value*/
+            return;
+        }
 
-        Toast t = Toast.makeText(this, winText, Toast.LENGTH_LONG);
+        Toast t = Toast.makeText(this, winText, Toast.LENGTH_SHORT);
         t.show();
 
-        //repurpose hit button to new game button
-        hitButton.setText("New Game");
-        hitButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                resetGameEvent();
-            }
-        });
-
+        //repurpose hit button to next game button
+        setHitButtonPurpose(PURPOSE_NEXT_GAME);
+        hitButton.setEnabled(true);
+        //disable stand button
+        standButton.setEnabled(false);
     }
 
     /* updateGUI updates player and dealer's scores as well as the images at different points
         during the BlackJackGame */
     private void updateGUI(BlackJackGame.Player playerToUpdate) {
-        float cardPadding = 100;
+        float cardPadding = 100; //specifies the X coordinate padding value between card images
         Vector<ImageView> imagesToUpdate;
         TextView scoreToUpdate;
 
@@ -357,11 +343,12 @@ public class GameActivity extends AppCompatActivity {
                         cardImage.setY(imagesToUpdate.lastElement().getY());
                     }
 
-                    //else{
-                    ///*set X / Y to initial card position*/
-                    //cardImage.setX(100f); //test value
-                    //cardImage.setY(100f); //test value
-                    //}
+                    else{
+                    /*set X / Y to initial card position*/
+                    cardImage.setX(300f); //test value
+                    cardImage.setY(0); //test value
+                    }
+
                     cardImage.setImageResource(cardToImage(hand.elementAt(i)));
                     cardImage.setEnabled(true);
                     cardImage.setVisibility(View.VISIBLE);
@@ -403,11 +390,15 @@ public class GameActivity extends AppCompatActivity {
 
     /*maps a Card object to the appropriate resource id for the corresponding card image*/
     int cardToImage(BlackJackGame.Card card){
+        //first, check if mystery card
+        if(card.getRank() == BlackJackGame.Card.Rank.MYSTERY ||
+                card.getSuit() == BlackJackGame.Card.Suit.MYSTERY){
+            return R.drawable.dealerfacedownone;
+        }
+
         switch(card.getSuit()){
             case DIAMONDS:
                 switch(card.getRank()) {
-                    case MYSTERY:
-                        return R.drawable.dealerfacedownone; /*is this correct?*/
                     case ACE:
                         return R.drawable.acecard;
                     case TWO:
@@ -434,9 +425,10 @@ public class GameActivity extends AppCompatActivity {
                         return R.drawable.queencard;
                     default:
                         /*Invalid rank: Some error occurred... throw an exception, etc. etc.*/
-                        break;
+                        return R.drawable.playerfacedownone;
+                        //break;
                 }
-                break;
+                //break;
 
             default:
                 /*Invalid suit: Some error occurred... throw an exception, etc. etc.*/
@@ -448,76 +440,51 @@ public class GameActivity extends AppCompatActivity {
     }
 
 
-    // saves the state of the variables used in the game
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        int PLayerscore = player.getScore();
-        int Dealerscore = dealer.getScore();
-        int PlayerBank = player.getBank();
-        int PlayerBet = player.getBet();
-        boolean standingP = player.isStanding();
-        boolean standingD = dealer.isStanding();
-        boolean bustedP = player.isBusted();
-        boolean bustedD = dealer.isBusted();
-        boolean blackjackP = player.hasBlackJack();
-        boolean blackjackD = dealer.hasBlackJack();
-
-        outState.putInt("playerScore", PLayerscore);
-        outState.putInt("dealerScore", Dealerscore);
-        outState.putInt("playerBet", PlayerBet);
-        outState.putInt("playerBank", PlayerBank);
-        outState.putBoolean("playerStanding", standingP);
-        outState.putBoolean("dealerStanding", standingD);
-        outState.putBoolean("playerBusted", bustedP);
-        outState.putBoolean("dealerBusted", bustedD);
-        super.onSaveInstanceState(outState);
-    }
-
-    /* onRestoreInstanceState restores the values saved by onSaveInstanceState to the proper
-     variables so that the transition to a different screen orientation is as seamless as possible */
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState){
-        super.onRestoreInstanceState(savedInstanceState);
-        try{
-            int ps = savedInstanceState.getInt("playerScore");
-            String playerscore = Integer.toString(ps);
-            playerScore.setText(playerscore);
-
-            int ds = savedInstanceState.getInt("dealerScore");
-            String dealerscore = Integer.toString(ds);
-            dealerScore.setText(dealerscore);
-
-            int pb = savedInstanceState.getInt("playerBet");
-            player.setBet(pb);
-
-            int pbank = savedInstanceState.getInt("playerBank");
-            player.setBank(pbank);
-
-            boolean pstanding = savedInstanceState.getBoolean("playerStanding");
-            if (pstanding){
-                player.stand();
-            }
-
-            boolean dstanding = savedInstanceState.getBoolean("dealerStanding");
-            if (dstanding){
-                dealer.stand();
-            }
-
-            boolean pbusted = savedInstanceState.getBoolean("bustedP");
-            if (pbusted){
-                player.stand();
-            }
-
-            boolean dbusted = savedInstanceState.getBoolean("bustedD");
-            if (dbusted){
-                dealer.stand();
-            }
-
-
-        }catch (NullPointerException ignored){
-
+    /*used to repurpose the hit button to serve as a start button / restart button, etc.*/
+    void setHitButtonPurpose(int purpose) {
+        if (hitButton == null) {
+            return;
         }
 
+        if (purpose == PURPOSE_NEW_GAME) {
+            /*make hit button a new game button*/
+            hitButton.setText("NEW GAME");
+            hitButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                /*hit button will trigger start game event*/
+                    startGameEvent();
+                }
+            });
+
+        } 
+        
+        else if (purpose == PURPOSE_HIT) {
+            /*make hit button a normal hit button*/
+            hitButton.setText("HIT");
+            hitButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                /*hit button will trigger hit event*/
+                    hitEvent();
+                }
+            });
+        } 
+        
+        else if (purpose == PURPOSE_NEXT_GAME) {
+            hitButton.setText("PLAY AGAIN");
+            hitButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                /*hit button will trigger reset game event*/
+                    resetGameEvent();
+                }
+            });
+        } 
+        
+        else {
+            /*invalid purpose*/
+            return;
+        }
     }
 }
-
