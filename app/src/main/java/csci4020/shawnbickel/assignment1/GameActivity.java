@@ -4,7 +4,6 @@ package csci4020.shawnbickel.assignment1;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -14,13 +13,11 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.Scanner;
@@ -46,7 +43,7 @@ public class GameActivity extends AppCompatActivity {
     private Vector<ImageView> playerCardImages;
     private Vector<ImageView> dealerCardImages;
     private static final String KEY = "preferences";
-    private final String DATA_FILENAME = "BlackJack.txt";
+    private final String DATA_FILENAME = "BlackJack2.txt";
     private String bankText;
     private final int PLAYERWINS = 1;
     private final int DEALERWINS = 2;
@@ -54,7 +51,6 @@ public class GameActivity extends AppCompatActivity {
     private final int PURPOSE_NEW_GAME = 1;
     private final int PURPOSE_HIT = 2;
     private final int PURPOSE_NEXT_GAME = 3;
-    private int bank = 0;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,17 +65,6 @@ public class GameActivity extends AppCompatActivity {
         standButton = (Button) findViewById(R.id.Stand);
         // Spinner provided a list of betting choices for the user to choose from
         bet = (Spinner) findViewById(R.id.bettingSpinner);
-
-        try {
-            bank = retrieveBank();
-            player.setBank(bank);
-            bankText = Integer.toString(bank);
-            playerBank.setText(bankText);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }catch (NullPointerException e){
-
-        }
 
         // ArrayAdapter populates the spinner with the contents of a string array
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
@@ -115,14 +100,38 @@ public class GameActivity extends AppCompatActivity {
         game = new BlackJackGame();
         player = game.getPlayer(); /*grab reference to dealer for convenience*/
         dealer = game.getDealer(); /*grab reference to player1 for convenience*/
+
+
+        updateGUI(player);
+        updateGUI(dealer);
         //start game
-        startGameEvent();
+        //startGameEvent();
     }
 
     /*the event for the game starting; could be triggered by
     * a start button but probably should just be triggered by onCreate; also
     * triggered by resetGameEvent*/
     private void startGameEvent() {
+        String bank = "";
+        // try-catch block retrieves the value of the player's current bank from a file
+        try {
+            //if (player.getBank() != 50000){
+                bank = retrieveBank();
+                int b = Integer.parseInt(bank);
+                player.setBank(b);
+                bankText = Integer.toString(b);
+                playerBank.setText(bankText);
+            //}
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }catch (NullPointerException e){
+
+        }catch (NumberFormatException e){
+
+        }
+
         //once game starts, set hit button to normal hit event behavior
         hitButton.setEnabled(true);
         setHitButtonPurpose(PURPOSE_HIT);
@@ -403,6 +412,7 @@ public class GameActivity extends AppCompatActivity {
                     cardImage.setVisibility(View.VISIBLE);
                     layout.addView(cardImage);
                     imagesToUpdate.add(cardImage);
+                    cardImage.animate().rotationY(360).start();
 
                 }
             }
@@ -412,8 +422,8 @@ public class GameActivity extends AppCompatActivity {
             /*hand is empty; add two blank cards*/
             imagesToUpdate.clear();
             cardImage = new ImageView(getApplicationContext());
-            //cardImage.setX(??);
-            //cardImage.setY(??);
+            cardImage.setX(300f);
+            cardImage.setY(0);
             if(playerToUpdate == player) {
                 cardImage.setImageResource(R.drawable.playerfacedownone);
             }
@@ -421,11 +431,13 @@ public class GameActivity extends AppCompatActivity {
                 cardImage.setImageResource(R.drawable.dealerfacedownone);
             }
             cardImage.setEnabled(true);
+            cardImage.setVisibility(View.VISIBLE);
+            layout.addView(cardImage);
             imagesToUpdate.add(cardImage);
 
             cardImage = new ImageView(getApplicationContext());
-            //cardImage.setX(??);
-            //cardImage.setY(??);
+            cardImage.setX(300f + cardPadding);
+            cardImage.setY(0);
             if(playerToUpdate == player) {
                 cardImage.setImageResource(R.drawable.playerfacedowntwo);
             }
@@ -433,6 +445,8 @@ public class GameActivity extends AppCompatActivity {
                 cardImage.setImageResource(R.drawable.dealerfacedowntwo);
             }
             cardImage.setEnabled(true);
+            cardImage.setVisibility(View.VISIBLE);
+            layout.addView(cardImage);
             imagesToUpdate.add(cardImage);
         }
     }
@@ -466,6 +480,8 @@ public class GameActivity extends AppCompatActivity {
                         return R.drawable.eightcard;
                     case NINE:
                         return R.drawable.ninecard;
+                    case TEN:
+                        return R.drawable.tencard;
                     case JACK:
                         return R.drawable.jackcard;
                     case KING:
@@ -613,15 +629,14 @@ public class GameActivity extends AppCompatActivity {
 
     // this method adds the data to the file
     private void addBalanceToFile(int b){
+        String balance = Integer.toString(b);
         try {
             FileOutputStream fos = openFileOutput(DATA_FILENAME, Context.MODE_PRIVATE);
-            ObjectOutputStream f = new ObjectOutputStream(fos);
             OutputStreamWriter osw = new OutputStreamWriter(fos);
             BufferedWriter bw = new BufferedWriter(osw);
             PrintWriter pw = new PrintWriter (bw);
-            f.write(b);
-            f.close();
-            //pw.close();
+            pw.println(balance);
+            pw.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             Toast.makeText(this, "Can't write to file", Toast.LENGTH_LONG).show();
@@ -631,18 +646,19 @@ public class GameActivity extends AppCompatActivity {
     }
 
     // readData method retrieves the data from the file to be placed into a vector and displayed in the ListActivity
-    private int retrieveBank() throws IOException {
-        int bank = 0;
+    private String retrieveBank() throws IOException {
+        String bank = "";
         try {
-            Scanner data = new Scanner(new BufferedReader(new FileReader(DATA_FILENAME)));
-
-            while (data.hasNext()) {
-                bank = data.nextInt();
-                data.close();
+            FileInputStream fileInputStream = openFileInput(DATA_FILENAME);
+            Scanner d = new Scanner(fileInputStream);
+            while(d.hasNextLine()){
+                    bank = d.nextLine();
             }
+            fileInputStream.close();
 
         } catch (FileNotFoundException e) {
-            Log.i("ReadData", "no input file found");
+            addBalanceToFile(player.getBank());
+            bank = retrieveBank();
         }
 
         return bank;

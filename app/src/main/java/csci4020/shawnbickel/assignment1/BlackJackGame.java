@@ -9,7 +9,7 @@ import java.util.Vector;
  * Created by Judson Thomas on 1/29/17.
  */
 
-public class BlackJackGame {
+public class BlackJackGame{
     /*data members*/
     private  Player player1;
     private  Player dealer;
@@ -26,7 +26,7 @@ public class BlackJackGame {
 
         /*here I define rank as the type of card (1, 2, queen, etc.); this might
         * not be the correct term*/
-        public enum Rank{MYSTERY, ACE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, JACK, KING, QUEEN}
+        public enum Rank{MYSTERY, ACE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, KING, QUEEN}
 
         protected Suit suit;
         protected Rank rank;
@@ -47,6 +47,7 @@ public class BlackJackGame {
                 case SEVEN: value = 7; break;
                 case EIGHT: value = 8; break;
                 case NINE: value = 9; break;
+                case TEN: value = 10; break;
                 case JACK: value = 10; break;
                 case KING: value = 10; break;
                 case QUEEN: value = 10; break;
@@ -95,6 +96,7 @@ public class BlackJackGame {
                 new Card(Card.Suit.DIAMONDS, Card.Rank.SEVEN),
                 new Card(Card.Suit.DIAMONDS, Card.Rank.EIGHT),
                 new Card(Card.Suit.DIAMONDS, Card.Rank.NINE),
+                new Card(Card.Suit.DIAMONDS, Card.Rank.TEN),
                 new Card(Card.Suit.DIAMONDS, Card.Rank.JACK),
                 new Card(Card.Suit.DIAMONDS, Card.Rank.QUEEN),
                 new Card(Card.Suit.DIAMONDS, Card.Rank.KING)};
