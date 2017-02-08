@@ -1,8 +1,10 @@
 package csci4020.shawnbickel.assignment1;
 
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -12,6 +14,16 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.util.Scanner;
 import java.util.Vector;
 
 import csci4020.shawnbickel.assignment1.blackjack.R;
@@ -27,33 +39,47 @@ public class GameActivity extends AppCompatActivity {
     private BlackJackGame.Player dealer;
     private TextView dealerScore;
     private TextView playerScore;
+    private TextView playerBank;
     private Button hitButton;
     private Button standButton;
     private Spinner bet;
     private Vector<ImageView> playerCardImages;
     private Vector<ImageView> dealerCardImages;
+    private static final String KEY = "preferences";
+    private final String DATA_FILENAME = "BlackJack.txt";
+    private String bankText;
     private final int PLAYERWINS = 1;
     private final int DEALERWINS = 2;
     private final int PUSH = 3;
     private final int PURPOSE_NEW_GAME = 1;
     private final int PURPOSE_HIT = 2;
     private final int PURPOSE_NEXT_GAME = 3;
+    private int bank = 0;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         /*initialize views*/
         setContentView(R.layout.activity_blackjack_game);
 
-
-
         // connects variable names to widget ids in the activity layout
         playerScore = (TextView) findViewById(R.id.PlayerScore);
         dealerScore = (TextView) findViewById(R.id.DealerScore);
+        playerBank = (TextView) findViewById(R.id.bankTextView);
         hitButton = (Button) findViewById(R.id.Hit);
         standButton = (Button) findViewById(R.id.Stand);
-
         // Spinner provided a list of betting choices for the user to choose from
         bet = (Spinner) findViewById(R.id.bettingSpinner);
+
+        try {
+            bank = retrieveBank();
+            player.setBank(bank);
+            bankText = Integer.toString(bank);
+            playerBank.setText(bankText);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }catch (NullPointerException e){
+
+        }
 
         // ArrayAdapter populates the spinner with the contents of a string array
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
@@ -125,6 +151,8 @@ public class GameActivity extends AppCompatActivity {
             else{
                 //player1 wins
                 game.giftBet();
+                updatePlayerBank();
+                addBalanceToFile(player.getBank());
                 gameEndEvent(PLAYERWINS);
             }
         }
@@ -173,11 +201,15 @@ public class GameActivity extends AppCompatActivity {
                 if(player.viewHand().size() > dealer.viewHand().size()){
                     //dealer wins
                     game.deductBet();
+                    updatePlayerBank();
+                    addBalanceToFile(player.getBank());
                     gameEndEvent(DEALERWINS);
                 }
                 else if(player.viewHand().size() < dealer.viewHand().size()){
                     //player wins
                     game.giftBet();
+                    updatePlayerBank();
+                    addBalanceToFile(player.getBank());
                     gameEndEvent(PLAYERWINS);
                 }
 
@@ -189,6 +221,8 @@ public class GameActivity extends AppCompatActivity {
             else{
                 //dealer wins
                 game.deductBet();
+                updatePlayerBank();
+                addBalanceToFile(player.getBank());
                 gameEndEvent(DEALERWINS);
             }
         }
@@ -206,12 +240,16 @@ public class GameActivity extends AppCompatActivity {
             if(dealer.isBusted()){
                 //player1 wins
                 game.giftBet();
+                updatePlayerBank();
+                addBalanceToFile(player.getBank());
                 gameEndEvent(PLAYERWINS);
             }
 
             else if(dealer.getScore() < player.getScore()){
                 //player1 wins
                 game.giftBet();
+                updatePlayerBank();
+                addBalanceToFile(player.getBank());
                 gameEndEvent(PLAYERWINS);
             }
 
@@ -223,6 +261,8 @@ public class GameActivity extends AppCompatActivity {
             else{ /*dealer's score is higher than player1's score*/
                 //dealer wins
                 game.deductBet();
+                updatePlayerBank();
+                addBalanceToFile(player.getBank());
                 gameEndEvent(DEALERWINS);
             }
         }
@@ -238,6 +278,8 @@ public class GameActivity extends AppCompatActivity {
 
             //disable button?
             game.deductBet();
+            updatePlayerBank();
+            addBalanceToFile(player.getBank());
             updateGUI(player);
             //etc. etc.
             gameEndEvent(DEALERWINS);
@@ -280,6 +322,13 @@ public class GameActivity extends AppCompatActivity {
         hitButton.setEnabled(true);
         //disable stand button
         standButton.setEnabled(false);
+    }
+
+    // method to update user of view of amount available to bet
+    private void updatePlayerBank(){
+        int bank = player.getBank();
+        bankText = Integer.toString(bank);
+        playerBank.setText(bankText);
     }
 
     /* updateGUI updates player and dealer's scores as well as the images at different points
@@ -487,4 +536,116 @@ public class GameActivity extends AppCompatActivity {
             return;
         }
     }
+
+    // saves the state of the variables used in the game
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        int PLayerscore = player.getScore();
+        int Dealerscore = dealer.getScore();
+        int PlayerBank = player.getBank();
+        int PlayerBet = player.getBet();
+        boolean standingP = player.isStanding();
+        boolean standingD = dealer.isStanding();
+        boolean bustedP = player.isBusted();
+        boolean bustedD = dealer.isBusted();
+
+        outState.putInt("playerScore", PLayerscore);
+        outState.putInt("dealerScore", Dealerscore);
+        outState.putInt("playerBet", PlayerBet);
+        outState.putInt("playerBank", PlayerBank);
+        outState.putBoolean("playerStanding", standingP);
+        outState.putBoolean("dealerStanding", standingD);
+        outState.putBoolean("playerBusted", bustedP);
+        outState.putBoolean("dealerBusted", bustedD);
+        super.onSaveInstanceState(outState);
+    }
+
+    /* onRestoreInstanceState restores the values saved by onSaveInstanceState to the proper
+ variables so that the transition to a different screen orientation is as seamless as possible */
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState){
+        super.onRestoreInstanceState(savedInstanceState);
+        try{
+            int ps = savedInstanceState.getInt("playerScore");
+            String playerscore = Integer.toString(ps);
+            playerScore.setText(playerscore);
+
+            int ds = savedInstanceState.getInt("dealerScore");
+            String dealerscore = Integer.toString(ds);
+            dealerScore.setText(dealerscore);
+
+            int pb = savedInstanceState.getInt("playerBet");
+            player.setBet(pb);
+
+            int userBankView = savedInstanceState.getInt("playerBank");
+            String uBV = Integer.toString(userBankView);
+            playerBank.setText(uBV);
+
+            int pbank = savedInstanceState.getInt("playerBank");
+            player.setBank(pbank);
+
+            boolean pstanding = savedInstanceState.getBoolean("playerStanding");
+            if (pstanding){
+                player.stand();
+            }
+
+            boolean dstanding = savedInstanceState.getBoolean("dealerStanding");
+            if (dstanding){
+                dealer.stand();
+            }
+
+            boolean pbusted = savedInstanceState.getBoolean("bustedP");
+            if (pbusted){
+                player.stand();
+            }
+
+            boolean dbusted = savedInstanceState.getBoolean("bustedD");
+            if (dbusted){
+                dealer.stand();
+            }
+
+
+        }catch (NullPointerException ignored){
+
+        }
+
+    }
+
+    // this method adds the data to the file
+    private void addBalanceToFile(int b){
+        try {
+            FileOutputStream fos = openFileOutput(DATA_FILENAME, Context.MODE_PRIVATE);
+            ObjectOutputStream f = new ObjectOutputStream(fos);
+            OutputStreamWriter osw = new OutputStreamWriter(fos);
+            BufferedWriter bw = new BufferedWriter(osw);
+            PrintWriter pw = new PrintWriter (bw);
+            f.write(b);
+            f.close();
+            //pw.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Can't write to file", Toast.LENGTH_LONG).show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // readData method retrieves the data from the file to be placed into a vector and displayed in the ListActivity
+    private int retrieveBank() throws IOException {
+        int bank = 0;
+        try {
+            Scanner data = new Scanner(new BufferedReader(new FileReader(DATA_FILENAME)));
+
+            while (data.hasNext()) {
+                bank = data.nextInt();
+                data.close();
+            }
+
+        } catch (FileNotFoundException e) {
+            Log.i("ReadData", "no input file found");
+        }
+
+        return bank;
+    }
+
 }

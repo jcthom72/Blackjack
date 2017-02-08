@@ -74,6 +74,22 @@
                     android:id="@+id/textview3"
                     android:textSize="18sp" />
 
+                <TextView
+                    android:text="BANK:"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/textview3"
+                    android:id="@+id/textview"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:text="50000"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toRightOf="@+id/textview"
+                    android:layout_below="@+id/textview3"
+                    android:id="@+id/bankTextView" />
+
             </RelativeLayout>
 
             <RelativeLayout
