@@ -13,14 +13,13 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.util.Scanner;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.StreamCorruptedException;
 import java.util.Vector;
 
 import csci4020.shawnbickel.assignment1.blackjack.R;
@@ -42,8 +41,7 @@ public class GameActivity extends AppCompatActivity {
     private Spinner bet;
     private Vector<ImageView> playerCardImages;
     private Vector<ImageView> dealerCardImages;
-    private static final String KEY = "preferences";
-    private final String DATA_FILENAME = "BlackJack2.txt";
+    private final String SERIALIZABLE_OBJECTS = "BlackJackGame.txt";
     private String bankText;
     private final int PLAYERWINS = 1;
     private final int DEALERWINS = 2;
@@ -51,18 +49,20 @@ public class GameActivity extends AppCompatActivity {
     private final int PURPOSE_NEW_GAME = 1;
     private final int PURPOSE_HIT = 2;
     private final int PURPOSE_NEXT_GAME = 3;
+    private int hitButtonPurpose;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         /*initialize views*/
         setContentView(R.layout.activity_blackjack_game);
-
         // connects variable names to widget ids in the activity layout
         playerScore = (TextView) findViewById(R.id.PlayerScore);
         dealerScore = (TextView) findViewById(R.id.DealerScore);
         playerBank = (TextView) findViewById(R.id.bankTextView);
         hitButton = (Button) findViewById(R.id.Hit);
         standButton = (Button) findViewById(R.id.Stand);
+
         // Spinner provided a list of betting choices for the user to choose from
         bet = (Spinner) findViewById(R.id.bettingSpinner);
 
@@ -73,65 +73,45 @@ public class GameActivity extends AppCompatActivity {
         assert bet != null;
         bet.setAdapter(adapter);
 
-        //initialize image view vectors
-        playerCardImages = new Vector<ImageView>();
-        dealerCardImages = new Vector<ImageView>();
-
-        //remove the facedown card images from the screen
-
-
-        //set on click listeners
-        setHitButtonPurpose(PURPOSE_NEW_GAME);
-        
         //hooking up standEvent to standButton's onClickListener
         if(standButton != null) {
             standButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    /*stand button will trigger stand event*/
-                    //hitButton.setEnabled(false);
-                    //standButton.setEnabled(false);
                     standEvent();
                 }
             });
         }
 
-        /*initialize game*/
-        game = new BlackJackGame();
-        player = game.getPlayer(); /*grab reference to dealer for convenience*/
-        dealer = game.getDealer(); /*grab reference to player1 for convenience*/
+        //initialize image view vectors
+        playerCardImages = new Vector<ImageView>();
+        dealerCardImages = new Vector<ImageView>();
 
 
-        updateGUI(player);
-        updateGUI(dealer);
-        //start game
-        //startGameEvent();
+         /* restore game state*/
+        restoreGameState();
+
+        if (savedInstanceState != null){
+            Boolean hitEnabled = savedInstanceState.getBoolean("HIT_BUTTON_ENABLED");
+            Boolean standEnabled = savedInstanceState.getBoolean("STAND_BUTTON_ENABLED");
+            int hitPurpose = savedInstanceState.getInt("HIT_BUTTON_PURPOSE");
+
+            hitButton.setEnabled(hitEnabled);
+            standButton.setEnabled(standEnabled);
+            setHitButtonPurpose(hitPurpose);
+        }
+
+        else{
+            setHitButtonPurpose(PURPOSE_NEW_GAME);
+        }
+
+
     }
 
     /*the event for the game starting; could be triggered by
     * a start button but probably should just be triggered by onCreate; also
     * triggered by resetGameEvent*/
     private void startGameEvent() {
-        String bank = "";
-        // try-catch block retrieves the value of the player's current bank from a file
-        try {
-            //if (player.getBank() != 50000){
-                bank = retrieveBank();
-                int b = Integer.parseInt(bank);
-                player.setBank(b);
-                bankText = Integer.toString(b);
-                playerBank.setText(bankText);
-            //}
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }catch (NullPointerException e){
-
-        }catch (NumberFormatException e){
-
-        }
-
         //once game starts, set hit button to normal hit event behavior
         hitButton.setEnabled(true);
         setHitButtonPurpose(PURPOSE_HIT);
@@ -161,7 +141,6 @@ public class GameActivity extends AppCompatActivity {
                 //player1 wins
                 game.giftBet();
                 updatePlayerBank();
-                addBalanceToFile(player.getBank());
                 gameEndEvent(PLAYERWINS);
             }
         }
@@ -211,14 +190,12 @@ public class GameActivity extends AppCompatActivity {
                     //dealer wins
                     game.deductBet();
                     updatePlayerBank();
-                    addBalanceToFile(player.getBank());
                     gameEndEvent(DEALERWINS);
                 }
                 else if(player.viewHand().size() < dealer.viewHand().size()){
                     //player wins
                     game.giftBet();
                     updatePlayerBank();
-                    addBalanceToFile(player.getBank());
                     gameEndEvent(PLAYERWINS);
                 }
 
@@ -231,7 +208,6 @@ public class GameActivity extends AppCompatActivity {
                 //dealer wins
                 game.deductBet();
                 updatePlayerBank();
-                addBalanceToFile(player.getBank());
                 gameEndEvent(DEALERWINS);
             }
         }
@@ -250,7 +226,6 @@ public class GameActivity extends AppCompatActivity {
                 //player1 wins
                 game.giftBet();
                 updatePlayerBank();
-                addBalanceToFile(player.getBank());
                 gameEndEvent(PLAYERWINS);
             }
 
@@ -258,7 +233,6 @@ public class GameActivity extends AppCompatActivity {
                 //player1 wins
                 game.giftBet();
                 updatePlayerBank();
-                addBalanceToFile(player.getBank());
                 gameEndEvent(PLAYERWINS);
             }
 
@@ -271,7 +245,6 @@ public class GameActivity extends AppCompatActivity {
                 //dealer wins
                 game.deductBet();
                 updatePlayerBank();
-                addBalanceToFile(player.getBank());
                 gameEndEvent(DEALERWINS);
             }
         }
@@ -288,7 +261,6 @@ public class GameActivity extends AppCompatActivity {
             //disable button?
             game.deductBet();
             updatePlayerBank();
-            addBalanceToFile(player.getBank());
             updateGUI(player);
             //etc. etc.
             gameEndEvent(DEALERWINS);
@@ -331,6 +303,7 @@ public class GameActivity extends AppCompatActivity {
         hitButton.setEnabled(true);
         //disable stand button
         standButton.setEnabled(false);
+        serializeObject(game);  // saves state of game to file in serializeObject method
     }
 
     // method to update user of view of amount available to bet
@@ -511,6 +484,8 @@ public class GameActivity extends AppCompatActivity {
             return;
         }
 
+        hitButtonPurpose = purpose;
+
         if (purpose == PURPOSE_NEW_GAME) {
             /*make hit button a new game button*/
             hitButton.setText("NEW GAME");
@@ -556,112 +531,85 @@ public class GameActivity extends AppCompatActivity {
     // saves the state of the variables used in the game
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        int PLayerscore = player.getScore();
-        int Dealerscore = dealer.getScore();
-        int PlayerBank = player.getBank();
-        int PlayerBet = player.getBet();
-        boolean standingP = player.isStanding();
-        boolean standingD = dealer.isStanding();
-        boolean bustedP = player.isBusted();
-        boolean bustedD = dealer.isBusted();
-
-        outState.putInt("playerScore", PLayerscore);
-        outState.putInt("dealerScore", Dealerscore);
-        outState.putInt("playerBet", PlayerBet);
-        outState.putInt("playerBank", PlayerBank);
-        outState.putBoolean("playerStanding", standingP);
-        outState.putBoolean("dealerStanding", standingD);
-        outState.putBoolean("playerBusted", bustedP);
-        outState.putBoolean("dealerBusted", bustedD);
         super.onSaveInstanceState(outState);
+        serializeObject(game);
+        outState.putBoolean("HIT_BUTTON_ENABLED", hitButton.isEnabled());
+        outState.putBoolean("STAND_BUTTON_ENABLED", standButton.isEnabled());
+        outState.putInt("HIT_BUTTON_PURPOSE", hitButtonPurpose);
     }
 
     /* onRestoreInstanceState restores the values saved by onSaveInstanceState to the proper
  variables so that the transition to a different screen orientation is as seamless as possible */
+    /*
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState){
         super.onRestoreInstanceState(savedInstanceState);
-        try{
-            int ps = savedInstanceState.getInt("playerScore");
-            String playerscore = Integer.toString(ps);
-            playerScore.setText(playerscore);
+        restoreGameState();
 
-            int ds = savedInstanceState.getInt("dealerScore");
-            String dealerscore = Integer.toString(ds);
-            dealerScore.setText(dealerscore);
+        Boolean hitEnabled = savedInstanceState.getBoolean("HIT_BUTTON_ENABLED");
+        Boolean standEnabled = savedInstanceState.getBoolean("STAND_BUTTON_ENABLED");
+        int hitPurpose = savedInstanceState.getInt("HIT_BUTTON_PURPOSE");
 
-            int pb = savedInstanceState.getInt("playerBet");
-            player.setBet(pb);
-
-            int userBankView = savedInstanceState.getInt("playerBank");
-            String uBV = Integer.toString(userBankView);
-            playerBank.setText(uBV);
-
-            int pbank = savedInstanceState.getInt("playerBank");
-            player.setBank(pbank);
-
-            boolean pstanding = savedInstanceState.getBoolean("playerStanding");
-            if (pstanding){
-                player.stand();
-            }
-
-            boolean dstanding = savedInstanceState.getBoolean("dealerStanding");
-            if (dstanding){
-                dealer.stand();
-            }
-
-            boolean pbusted = savedInstanceState.getBoolean("bustedP");
-            if (pbusted){
-                player.stand();
-            }
-
-            boolean dbusted = savedInstanceState.getBoolean("bustedD");
-            if (dbusted){
-                dealer.stand();
-            }
-
-
-        }catch (NullPointerException ignored){
-
-        }
+        hitButton.setEnabled(hitEnabled);
+        standButton.setEnabled(standEnabled);
+        setHitButtonPurpose(hitPurpose);
 
     }
+    */
 
-    // this method adds the data to the file
-    private void addBalanceToFile(int b){
-        String balance = Integer.toString(b);
-        try {
-            FileOutputStream fos = openFileOutput(DATA_FILENAME, Context.MODE_PRIVATE);
-            OutputStreamWriter osw = new OutputStreamWriter(fos);
-            BufferedWriter bw = new BufferedWriter(osw);
-            PrintWriter pw = new PrintWriter (bw);
-            pw.println(balance);
-            pw.close();
+    private void serializeObject(BlackJackGame o){
+        try{
+            //FileOutputStream outputStream = new FileOutputStream(SERIALIZABLE_OBJECTS);
+            FileOutputStream outputStream = openFileOutput(SERIALIZABLE_OBJECTS, Context.MODE_PRIVATE);
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+            objectOutputStream.writeObject(o);
+            //objectOutputStream.flush();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            Toast.makeText(this, "Can't write to file", Toast.LENGTH_LONG).show();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    // readData method retrieves the data from the file to be placed into a vector and displayed in the ListActivity
-    private String retrieveBank() throws IOException {
-        String bank = "";
-        try {
-            FileInputStream fileInputStream = openFileInput(DATA_FILENAME);
-            Scanner d = new Scanner(fileInputStream);
-            while(d.hasNextLine()){
-                    bank = d.nextLine();
-            }
-            fileInputStream.close();
-
+    private BlackJackGame readSerializable(){
+        BlackJackGame g = new BlackJackGame();
+        try{
+            FileInputStream inputStream = openFileInput(SERIALIZABLE_OBJECTS);
+            ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
+            g = (BlackJackGame) objectInputStream.readObject();
         } catch (FileNotFoundException e) {
-            addBalanceToFile(player.getBank());
-            bank = retrieveBank();
+            serializeObject(game);
+            g = readSerializable();
+            e.printStackTrace();
+        } catch (StreamCorruptedException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
 
-        return bank;
+        return g;
+    }
+
+    @Override
+    protected void onPause() {
+        serializeObject(game);
+        super.onPause();
+    }
+
+    public void restoreGameState(){
+        game = readSerializable();
+        if (game == null){
+            game = new BlackJackGame();
+        }
+
+        player = game.getPlayer(); /*grab reference to dealer for convenience*/
+        dealer = game.getDealer(); /*grab reference to player1 for convenience*/
+        updatePlayerBank();
+
+        updateGUI(player);
+        updateGUI(dealer);
     }
 
 }

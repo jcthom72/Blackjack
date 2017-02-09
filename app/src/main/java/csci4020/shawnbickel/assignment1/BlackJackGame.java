@@ -1,5 +1,6 @@
 package csci4020.shawnbickel.assignment1;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Stack;
@@ -9,7 +10,7 @@ import java.util.Vector;
  * Created by Judson Thomas on 1/29/17.
  */
 
-public class BlackJackGame{
+public class BlackJackGame implements Serializable{
     /*data members*/
     private  Player player1;
     private  Player dealer;
@@ -21,7 +22,7 @@ public class BlackJackGame{
     * it does not need access to the instance variables of BlackJackGame.
     * It's only use to serve as a namespace inside BlackJackGame to enclose the methods
     * and members associated with a Card.*/
-    public static class Card{
+    public static class Card implements Serializable{
         public enum Suit{MYSTERY, SPADES, CLUBS, HEARTS, DIAMONDS}
 
         /*here I define rank as the type of card (1, 2, queen, etc.); this might
@@ -65,7 +66,7 @@ public class BlackJackGame{
     }
 
     /*See above reason for being static*/
-    public static class Ace extends Card{
+    public static class Ace extends Card implements Serializable{
         public enum AceValue{ONE, ELEVEN}
 
         private Ace(Suit suit, AceValue aceValue){
@@ -81,7 +82,7 @@ public class BlackJackGame{
     }
 
     /*See above reason for being static*/
-    public static class Deck{
+    public static class Deck implements Serializable{
         /*CARDS is the list of card objects that exist for this BlackJackGame instance;
          these Card objects will then be put inside of our deck and randomly shuffled
         * to make our game deck.*/
@@ -125,7 +126,7 @@ public class BlackJackGame{
     * the BlackJackGame and have access to its instance members. Specifically, the Player
     * class needs to be tied to a given BlackJackGame instance to access the specific deck object
     * which it will draw from.*/
-    public class Player{
+    public class Player implements Serializable{
         /*data members*/
         private Vector<Card> hand;
         private int bank;
