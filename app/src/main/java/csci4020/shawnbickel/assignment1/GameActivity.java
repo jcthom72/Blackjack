@@ -33,6 +33,7 @@ public class GameActivity extends AppCompatActivity {
     private BlackJackGame game;
     private BlackJackGame.Player player;
     private BlackJackGame.Player dealer;
+    
     private TextView dealerScore;
     private TextView playerScore;
     private TextView playerBank;
@@ -41,8 +42,12 @@ public class GameActivity extends AppCompatActivity {
     private Spinner bet;
     private Vector<ImageView> playerCardImages;
     private Vector<ImageView> dealerCardImages;
+    
     private final String SERIALIZABLE_OBJECTS = "BlackJackGame.txt";
-    private String bankText;
+    private final String HIT_BUTTON_ENABLED_KEY = "HIT_BUTTON_ENABLED_KEY";
+    private final String STAND_BUTTON_ENABLED_KEY = "STAND_BUTTON_ENABLED_KEY";
+    private final String HIT_BUTTON_PURPOSE_KEY = "HIT_BUTTON_PURPOSE_KEY";
+
     private final int PLAYERWINS = 1;
     private final int DEALERWINS = 2;
     private final int PUSH = 3;
@@ -92,9 +97,9 @@ public class GameActivity extends AppCompatActivity {
         restoreGameState();
 
         if (savedInstanceState != null){
-            Boolean hitEnabled = savedInstanceState.getBoolean("HIT_BUTTON_ENABLED");
-            Boolean standEnabled = savedInstanceState.getBoolean("STAND_BUTTON_ENABLED");
-            int hitPurpose = savedInstanceState.getInt("HIT_BUTTON_PURPOSE");
+            Boolean hitEnabled = savedInstanceState.getBoolean(HIT_BUTTON_ENABLED_KEY);
+            Boolean standEnabled = savedInstanceState.getBoolean(STAND_BUTTON_ENABLED_KEY);
+            int hitPurpose = savedInstanceState.getInt(HIT_BUTTON_PURPOSE_KEY);
 
             hitButton.setEnabled(hitEnabled);
             standButton.setEnabled(standEnabled);
@@ -103,9 +108,8 @@ public class GameActivity extends AppCompatActivity {
 
         else{
             setHitButtonPurpose(PURPOSE_NEW_GAME);
+            standButton.setEnabled(false);
         }
-
-
     }
 
     /*the event for the game starting; could be triggered by
@@ -303,20 +307,21 @@ public class GameActivity extends AppCompatActivity {
         hitButton.setEnabled(true);
         //disable stand button
         standButton.setEnabled(false);
-        serializeObject(game);  // saves state of game to file in serializeObject method
+        serializeGameObject(game);  // saves state of game to file in serializeGameObject method
     }
 
-    // method to update user of view of amount available to bet
+    /*updates player's bank textview*/
     private void updatePlayerBank(){
         int bank = player.getBank();
-        bankText = Integer.toString(bank);
-        playerBank.setText(bankText);
+        playerBank.setText(Integer.toString(bank));
     }
 
     /* updateGUI updates player and dealer's scores as well as the images at different points
         during the BlackJackGame */
     private void updateGUI(BlackJackGame.Player playerToUpdate) {
-        float cardPadding = 100; //specifies the X coordinate padding value between card images
+        float cardPadding = 100f; //specifies the X coordinate padding value between card images
+        float initialCardX = 300f; //specifies the X coordinate for the initial card's position
+        float initialCardY = 0f; //specifies the Y coordinate for the initial card's position
         Vector<ImageView> imagesToUpdate;
         TextView scoreToUpdate;
 
@@ -376,8 +381,8 @@ public class GameActivity extends AppCompatActivity {
 
                     else{
                     /*set X / Y to initial card position*/
-                    cardImage.setX(300f); //test value
-                    cardImage.setY(0); //test value
+                    cardImage.setX(initialCardX); //test value
+                    cardImage.setY(initialCardY); //test value
                     }
 
                     cardImage.setImageResource(cardToImage(hand.elementAt(i)));
@@ -395,8 +400,8 @@ public class GameActivity extends AppCompatActivity {
             /*hand is empty; add two blank cards*/
             imagesToUpdate.clear();
             cardImage = new ImageView(getApplicationContext());
-            cardImage.setX(300f);
-            cardImage.setY(0);
+            cardImage.setX(initialCardX);
+            cardImage.setY(initialCardY);
             if(playerToUpdate == player) {
                 cardImage.setImageResource(R.drawable.playerfacedownone);
             }
@@ -409,8 +414,8 @@ public class GameActivity extends AppCompatActivity {
             imagesToUpdate.add(cardImage);
 
             cardImage = new ImageView(getApplicationContext());
-            cardImage.setX(300f + cardPadding);
-            cardImage.setY(0);
+            cardImage.setX(initialCardX + cardPadding);
+            cardImage.setY(initialCardY);
             if(playerToUpdate == player) {
                 cardImage.setImageResource(R.drawable.playerfacedowntwo);
             }
@@ -532,60 +537,54 @@ public class GameActivity extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        serializeObject(game);
-        outState.putBoolean("HIT_BUTTON_ENABLED", hitButton.isEnabled());
-        outState.putBoolean("STAND_BUTTON_ENABLED", standButton.isEnabled());
-        outState.putInt("HIT_BUTTON_PURPOSE", hitButtonPurpose);
+        serializeGameObject(game);
+        outState.putBoolean(HIT_BUTTON_ENABLED_KEY, hitButton.isEnabled());
+        outState.putBoolean(STAND_BUTTON_ENABLED_KEY, standButton.isEnabled());
+        outState.putInt(HIT_BUTTON_PURPOSE_KEY, hitButtonPurpose);
     }
 
-    /* onRestoreInstanceState restores the values saved by onSaveInstanceState to the proper
- variables so that the transition to a different screen orientation is as seamless as possible */
-    /*
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState){
-        super.onRestoreInstanceState(savedInstanceState);
-        restoreGameState();
-
-        Boolean hitEnabled = savedInstanceState.getBoolean("HIT_BUTTON_ENABLED");
-        Boolean standEnabled = savedInstanceState.getBoolean("STAND_BUTTON_ENABLED");
-        int hitPurpose = savedInstanceState.getInt("HIT_BUTTON_PURPOSE");
-
-        hitButton.setEnabled(hitEnabled);
-        standButton.setEnabled(standEnabled);
-        setHitButtonPurpose(hitPurpose);
-
-    }
-    */
-
-    private void serializeObject(BlackJackGame o){
+    private void serializeGameObject(BlackJackGame o){
         try{
             //FileOutputStream outputStream = new FileOutputStream(SERIALIZABLE_OBJECTS);
             FileOutputStream outputStream = openFileOutput(SERIALIZABLE_OBJECTS, Context.MODE_PRIVATE);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
             objectOutputStream.writeObject(o);
-            //objectOutputStream.flush();
-        } catch (FileNotFoundException e) {
+            objectOutputStream.flush();
+        }
+        
+        /*error has occurred*/
+        catch (FileNotFoundException e) {
             e.printStackTrace();
-        } catch (IOException e) {
+        } 
+        
+        /*error has occurred*/
+        catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private BlackJackGame readSerializable(){
-        BlackJackGame g = new BlackJackGame();
+    private BlackJackGame readGameObject(){
+        BlackJackGame g = null;
+        
         try{
             FileInputStream inputStream = openFileInput(SERIALIZABLE_OBJECTS);
             ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
             g = (BlackJackGame) objectInputStream.readObject();
-        } catch (FileNotFoundException e) {
-            serializeObject(game);
-            g = readSerializable();
+        }
+        /*file does not exist yet; return null*/
+        catch (FileNotFoundException e) {
+            return null;
+        }
+        /*error occurred*/
+        catch (StreamCorruptedException e) {
             e.printStackTrace();
-        } catch (StreamCorruptedException e) {
+        } 
+        /*error occurred*/
+        catch (IOException e) {
             e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
+        } 
+        /*error occurred*/
+        catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
 
@@ -594,12 +593,13 @@ public class GameActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
-        serializeObject(game);
+        serializeGameObject(game);
         super.onPause();
     }
 
     public void restoreGameState(){
-        game = readSerializable();
+        game = readGameObject();
+        
         if (game == null){
             game = new BlackJackGame();
         }
@@ -611,5 +611,4 @@ public class GameActivity extends AppCompatActivity {
         updateGUI(player);
         updateGUI(dealer);
     }
-
 }
