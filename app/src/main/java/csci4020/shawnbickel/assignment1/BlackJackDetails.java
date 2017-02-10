@@ -9,7 +9,7 @@ import android.widget.Button;
 
 import csci4020.shawnbickel.assignment1.blackjack.R;
 
-public class BlackJackDetails extends AppCompatActivity {
+public class BlackJackDetails extends AppCompatActivity{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

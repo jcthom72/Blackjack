@@ -1,6 +1,7 @@
 package csci4020.shawnbickel.assignment1;
 
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -12,6 +13,13 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.StreamCorruptedException;
 import java.util.Vector;
 
 import csci4020.shawnbickel.assignment1.blackjack.R;
@@ -27,28 +35,31 @@ public class GameActivity extends AppCompatActivity {
     private BlackJackGame.Player dealer;
     private TextView dealerScore;
     private TextView playerScore;
+    private TextView playerBank;
     private Button hitButton;
     private Button standButton;
     private Spinner bet;
     private Vector<ImageView> playerCardImages;
     private Vector<ImageView> dealerCardImages;
+    private final String SERIALIZABLE_OBJECTS = "BlackJackGame.txt";
+    private String bankText;
     private final int PLAYERWINS = 1;
     private final int DEALERWINS = 2;
     private final int PUSH = 3;
     private final int PURPOSE_NEW_GAME = 1;
     private final int PURPOSE_HIT = 2;
     private final int PURPOSE_NEXT_GAME = 3;
+    private int hitButtonPurpose;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         /*initialize views*/
         setContentView(R.layout.activity_blackjack_game);
-
-
-
         // connects variable names to widget ids in the activity layout
         playerScore = (TextView) findViewById(R.id.PlayerScore);
         dealerScore = (TextView) findViewById(R.id.DealerScore);
+        playerBank = (TextView) findViewById(R.id.bankTextView);
         hitButton = (Button) findViewById(R.id.Hit);
         standButton = (Button) findViewById(R.id.Stand);
 
@@ -62,35 +73,39 @@ public class GameActivity extends AppCompatActivity {
         assert bet != null;
         bet.setAdapter(adapter);
 
-        //initialize image view vectors
-        playerCardImages = new Vector<ImageView>();
-        dealerCardImages = new Vector<ImageView>();
-
-        //remove the facedown card images from the screen
-
-
-        //set on click listeners
-        setHitButtonPurpose(PURPOSE_NEW_GAME);
-        
         //hooking up standEvent to standButton's onClickListener
         if(standButton != null) {
             standButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    /*stand button will trigger stand event*/
-                    //hitButton.setEnabled(false);
-                    //standButton.setEnabled(false);
                     standEvent();
                 }
             });
         }
 
-        /*initialize game*/
-        game = new BlackJackGame();
-        player = game.getPlayer(); /*grab reference to dealer for convenience*/
-        dealer = game.getDealer(); /*grab reference to player1 for convenience*/
-        //start game
-        startGameEvent();
+        //initialize image view vectors
+        playerCardImages = new Vector<ImageView>();
+        dealerCardImages = new Vector<ImageView>();
+
+
+         /* restore game state*/
+        restoreGameState();
+
+        if (savedInstanceState != null){
+            Boolean hitEnabled = savedInstanceState.getBoolean("HIT_BUTTON_ENABLED");
+            Boolean standEnabled = savedInstanceState.getBoolean("STAND_BUTTON_ENABLED");
+            int hitPurpose = savedInstanceState.getInt("HIT_BUTTON_PURPOSE");
+
+            hitButton.setEnabled(hitEnabled);
+            standButton.setEnabled(standEnabled);
+            setHitButtonPurpose(hitPurpose);
+        }
+
+        else{
+            setHitButtonPurpose(PURPOSE_NEW_GAME);
+        }
+
+
     }
 
     /*the event for the game starting; could be triggered by
@@ -125,6 +140,7 @@ public class GameActivity extends AppCompatActivity {
             else{
                 //player1 wins
                 game.giftBet();
+                updatePlayerBank();
                 gameEndEvent(PLAYERWINS);
             }
         }
@@ -173,11 +189,13 @@ public class GameActivity extends AppCompatActivity {
                 if(player.viewHand().size() > dealer.viewHand().size()){
                     //dealer wins
                     game.deductBet();
+                    updatePlayerBank();
                     gameEndEvent(DEALERWINS);
                 }
                 else if(player.viewHand().size() < dealer.viewHand().size()){
                     //player wins
                     game.giftBet();
+                    updatePlayerBank();
                     gameEndEvent(PLAYERWINS);
                 }
 
@@ -189,6 +207,7 @@ public class GameActivity extends AppCompatActivity {
             else{
                 //dealer wins
                 game.deductBet();
+                updatePlayerBank();
                 gameEndEvent(DEALERWINS);
             }
         }
@@ -206,12 +225,14 @@ public class GameActivity extends AppCompatActivity {
             if(dealer.isBusted()){
                 //player1 wins
                 game.giftBet();
+                updatePlayerBank();
                 gameEndEvent(PLAYERWINS);
             }
 
             else if(dealer.getScore() < player.getScore()){
                 //player1 wins
                 game.giftBet();
+                updatePlayerBank();
                 gameEndEvent(PLAYERWINS);
             }
 
@@ -223,6 +244,7 @@ public class GameActivity extends AppCompatActivity {
             else{ /*dealer's score is higher than player1's score*/
                 //dealer wins
                 game.deductBet();
+                updatePlayerBank();
                 gameEndEvent(DEALERWINS);
             }
         }
@@ -238,6 +260,7 @@ public class GameActivity extends AppCompatActivity {
 
             //disable button?
             game.deductBet();
+            updatePlayerBank();
             updateGUI(player);
             //etc. etc.
             gameEndEvent(DEALERWINS);
@@ -280,6 +303,14 @@ public class GameActivity extends AppCompatActivity {
         hitButton.setEnabled(true);
         //disable stand button
         standButton.setEnabled(false);
+        serializeObject(game);  // saves state of game to file in serializeObject method
+    }
+
+    // method to update user of view of amount available to bet
+    private void updatePlayerBank(){
+        int bank = player.getBank();
+        bankText = Integer.toString(bank);
+        playerBank.setText(bankText);
     }
 
     /* updateGUI updates player and dealer's scores as well as the images at different points
@@ -354,6 +385,7 @@ public class GameActivity extends AppCompatActivity {
                     cardImage.setVisibility(View.VISIBLE);
                     layout.addView(cardImage);
                     imagesToUpdate.add(cardImage);
+                    cardImage.animate().rotationY(360).start();
 
                 }
             }
@@ -363,8 +395,8 @@ public class GameActivity extends AppCompatActivity {
             /*hand is empty; add two blank cards*/
             imagesToUpdate.clear();
             cardImage = new ImageView(getApplicationContext());
-            //cardImage.setX(??);
-            //cardImage.setY(??);
+            cardImage.setX(300f);
+            cardImage.setY(0);
             if(playerToUpdate == player) {
                 cardImage.setImageResource(R.drawable.playerfacedownone);
             }
@@ -372,11 +404,13 @@ public class GameActivity extends AppCompatActivity {
                 cardImage.setImageResource(R.drawable.dealerfacedownone);
             }
             cardImage.setEnabled(true);
+            cardImage.setVisibility(View.VISIBLE);
+            layout.addView(cardImage);
             imagesToUpdate.add(cardImage);
 
             cardImage = new ImageView(getApplicationContext());
-            //cardImage.setX(??);
-            //cardImage.setY(??);
+            cardImage.setX(300f + cardPadding);
+            cardImage.setY(0);
             if(playerToUpdate == player) {
                 cardImage.setImageResource(R.drawable.playerfacedowntwo);
             }
@@ -384,6 +418,8 @@ public class GameActivity extends AppCompatActivity {
                 cardImage.setImageResource(R.drawable.dealerfacedowntwo);
             }
             cardImage.setEnabled(true);
+            cardImage.setVisibility(View.VISIBLE);
+            layout.addView(cardImage);
             imagesToUpdate.add(cardImage);
         }
     }
@@ -417,6 +453,8 @@ public class GameActivity extends AppCompatActivity {
                         return R.drawable.eightcard;
                     case NINE:
                         return R.drawable.ninecard;
+                    case TEN:
+                        return R.drawable.tencard;
                     case JACK:
                         return R.drawable.jackcard;
                     case KING:
@@ -445,6 +483,8 @@ public class GameActivity extends AppCompatActivity {
         if (hitButton == null) {
             return;
         }
+
+        hitButtonPurpose = purpose;
 
         if (purpose == PURPOSE_NEW_GAME) {
             /*make hit button a new game button*/
@@ -487,4 +527,89 @@ public class GameActivity extends AppCompatActivity {
             return;
         }
     }
+
+    // saves the state of the variables used in the game
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        serializeObject(game);
+        outState.putBoolean("HIT_BUTTON_ENABLED", hitButton.isEnabled());
+        outState.putBoolean("STAND_BUTTON_ENABLED", standButton.isEnabled());
+        outState.putInt("HIT_BUTTON_PURPOSE", hitButtonPurpose);
+    }
+
+    /* onRestoreInstanceState restores the values saved by onSaveInstanceState to the proper
+ variables so that the transition to a different screen orientation is as seamless as possible */
+    /*
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState){
+        super.onRestoreInstanceState(savedInstanceState);
+        restoreGameState();
+
+        Boolean hitEnabled = savedInstanceState.getBoolean("HIT_BUTTON_ENABLED");
+        Boolean standEnabled = savedInstanceState.getBoolean("STAND_BUTTON_ENABLED");
+        int hitPurpose = savedInstanceState.getInt("HIT_BUTTON_PURPOSE");
+
+        hitButton.setEnabled(hitEnabled);
+        standButton.setEnabled(standEnabled);
+        setHitButtonPurpose(hitPurpose);
+
+    }
+    */
+
+    private void serializeObject(BlackJackGame o){
+        try{
+            //FileOutputStream outputStream = new FileOutputStream(SERIALIZABLE_OBJECTS);
+            FileOutputStream outputStream = openFileOutput(SERIALIZABLE_OBJECTS, Context.MODE_PRIVATE);
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+            objectOutputStream.writeObject(o);
+            //objectOutputStream.flush();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private BlackJackGame readSerializable(){
+        BlackJackGame g = new BlackJackGame();
+        try{
+            FileInputStream inputStream = openFileInput(SERIALIZABLE_OBJECTS);
+            ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
+            g = (BlackJackGame) objectInputStream.readObject();
+        } catch (FileNotFoundException e) {
+            serializeObject(game);
+            g = readSerializable();
+            e.printStackTrace();
+        } catch (StreamCorruptedException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return g;
+    }
+
+    @Override
+    protected void onPause() {
+        serializeObject(game);
+        super.onPause();
+    }
+
+    public void restoreGameState(){
+        game = readSerializable();
+        if (game == null){
+            game = new BlackJackGame();
+        }
+
+        player = game.getPlayer(); /*grab reference to dealer for convenience*/
+        dealer = game.getDealer(); /*grab reference to player1 for convenience*/
+        updatePlayerBank();
+
+        updateGUI(player);
+        updateGUI(dealer);
+    }
+
 }
