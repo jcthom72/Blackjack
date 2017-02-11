@@ -15,9 +15,14 @@ public class BlackJackGame implements Serializable{
     private  Player player1;
     private  Player dealer;
     private Deck deck;
+
+    /*button state variables*/
     private boolean hitButtonState;
     private boolean standButtonState;
     private int gameState;
+    public static final int PURPOSE_NEW_GAME = 1;
+    public static final int PURPOSE_HIT = 2;
+    public static final int PURPOSE_NEXT_GAME = 3;
 
     /*inner classes*/
 
@@ -253,9 +258,10 @@ public class BlackJackGame implements Serializable{
 
         deck = new Deck();
 
-        // state buttons indicate whether the buttons should be disabled
+        /*initialize button state data*/
         hitButtonState = true;
         standButtonState = false;
+        gameState = PURPOSE_NEW_GAME;
     }
 
     /*returns the player (player1)*/
@@ -286,36 +292,6 @@ public class BlackJackGame implements Serializable{
     * player1 loses*/
     public void deductBet(){
         player1.bank -= player1.bet;
-    }
-
-    // indicates whether the hit button should be enabled or disabled
-    public void setHitButtonState(boolean hitButton){
-        hitButtonState = hitButton;
-    }
-
-    // indicates whether the stand button should be enabled or disabled
-    public void setStandButtonState(boolean standButton){
-        standButtonState = standButton;
-    }
-
-    // sets the current game state or purpose such as 'new game', 'hit', or
-    public void setGameState(int state){
-        gameState = state;
-    }
-
-    // returns the current game state
-    public int getGameState(){
-        return gameState;
-    }
-
-    // returns the state the hit button should be in
-    public boolean getHitButtonState(){
-        return hitButtonState;
-    }
-
-    // returns the state the stand button should be in
-    public boolean getStandButtonState(){
-        return standButtonState;
     }
 
     /*deals the first two cards to the Player specified by "player"*/
@@ -377,4 +353,38 @@ public class BlackJackGame implements Serializable{
         dealer.hand.clear();
         dealer.score = 0;
     }
+
+
+    /*button state methods*/
+
+    // indicates whether the hit button should be enabled or disabled
+    public void setHitButtonState(boolean hitButton){
+        hitButtonState = hitButton;
+    }
+
+    // indicates whether the stand button should be enabled or disabled
+    public void setStandButtonState(boolean standButton){
+        standButtonState = standButton;
+    }
+
+    // sets the current game state or purpose such as 'new game', 'hit', or
+    public void setGameState(int state){
+        gameState = state;
+    }
+
+    // returns the current game state
+    public int getGameState(){
+        return gameState;
+    }
+
+    // returns the state the hit button should be in
+    public boolean getHitButtonState(){
+        return hitButtonState;
+    }
+
+    // returns the state the stand button should be in
+    public boolean getStandButtonState(){
+        return standButtonState;
+    }
+
 }

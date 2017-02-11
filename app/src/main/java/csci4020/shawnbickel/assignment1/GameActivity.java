@@ -33,39 +33,33 @@ public class GameActivity extends AppCompatActivity {
     private BlackJackGame game;
     private BlackJackGame.Player player;
     private BlackJackGame.Player dealer;
+
     private TextView dealerScore;
     private TextView playerScore;
     private TextView playerBank;
     private Button hitButton;
     private Button standButton;
     private Spinner bet;
+
     private Vector<ImageView> playerCardImages;
     private Vector<ImageView> dealerCardImages;
-    private final String SERIALIZABLE_OBJECTS = "BlackJackGame.txt";
-    private String bankText;
+
+    private final String SERIALIZE_GAME = "BlackJackGame.txt";
     private final int PLAYERWINS = 1;
     private final int DEALERWINS = 2;
     private final int PUSH = 3;
-    private final int PURPOSE_NEW_GAME = 1;
-    private final int PURPOSE_HIT = 2;
-    private final int PURPOSE_NEXT_GAME = 3;
-    private int hitButtonPurpose;
-    private int gamePause = 0;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         /*initialize views*/
         setContentView(R.layout.activity_blackjack_game);
+
         // connects variable names to widget ids in the activity layout
         playerScore = (TextView) findViewById(R.id.PlayerScore);
         dealerScore = (TextView) findViewById(R.id.DealerScore);
         playerBank = (TextView) findViewById(R.id.bankTextView);
         hitButton = (Button) findViewById(R.id.Hit);
         standButton = (Button) findViewById(R.id.Stand);
-        hitButton.setEnabled(true);
-        standButton.setEnabled(false);
-
-        // Spinner provided a list of betting choices for the user to choose from
         bet = (Spinner) findViewById(R.id.bettingSpinner);
 
         // ArrayAdapter populates the spinner with the contents of a string array
@@ -80,8 +74,6 @@ public class GameActivity extends AppCompatActivity {
             standButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    //standButton.setEnabled(false);
-                    //game.setStandButtonState(false);
                     standEvent();
                 }
             });
@@ -91,72 +83,22 @@ public class GameActivity extends AppCompatActivity {
         playerCardImages = new Vector<ImageView>();
         dealerCardImages = new Vector<ImageView>();
 
-         /* restore game state*/
+         /* restore BlackJackGame game object; restore button states; update screen*/
         restoreGameState();
-
-        if (savedInstanceState != null) {
-            Boolean hitEnabled = savedInstanceState.getBoolean("HIT_BUTTON_ENABLED");
-            Boolean standEnabled = savedInstanceState.getBoolean("STAND_BUTTON_ENABLED");
-            int hitPurpose = savedInstanceState.getInt("HIT_BUTTON_PURPOSE");
-            if (hitPurpose == PURPOSE_HIT){
-                game.setGameState(PURPOSE_HIT);
-            }else if (hitPurpose == PURPOSE_NEW_GAME){
-                game.setGameState(PURPOSE_NEW_GAME);
-            }else if (hitPurpose == PURPOSE_NEXT_GAME){
-                game.setGameState(PURPOSE_NEXT_GAME);
-            }
-
-            // set state of button depending on previous setting
-            if (game.getHitButtonState() == true){
-                hitButton.setEnabled(true);
-                game.setHitButtonState(hitEnabled);
-            }else{
-                hitButton.setEnabled(false);
-                game.setHitButtonState(hitEnabled);
-
-            }
-
-            if (game.getStandButtonState() == true){
-                standButton.setEnabled(true);
-                game.setStandButtonState(standEnabled);
-            }else{
-                standButton.setEnabled(false);
-                game.setStandButtonState(standEnabled);
-            }
-
-
-            // set game state
-            if(game.getGameState() == PURPOSE_HIT){
-                hitButton.setText("HIT");
-                setHitButtonPurpose(PURPOSE_HIT);
-            }else if (game.getGameState() == PURPOSE_NEXT_GAME){
-                hitButton.setText("PLAY AGAIN");
-                standButton.setEnabled(true);
-                setHitButtonPurpose(PURPOSE_NEXT_GAME);
-            }else if (game.getGameState() == PURPOSE_NEW_GAME){
-                hitButton.setText("RESUME");
-                standButton.setEnabled(true);
-                setHitButtonPurpose(PURPOSE_NEW_GAME);
-            }
-
-        } else {
-            setHitButtonPurpose(PURPOSE_NEW_GAME);
-            game.setGameState(PURPOSE_NEW_GAME);
-        }
-
-
-
-
     }
+
     /*the event for the game starting; could be triggered by
-    * a start button but probably should just be triggered by onCreate; also
-    * triggered by resetGameEvent*/
+    * a start button; also triggered by resetGameEvent*/
     private void startGameEvent() {
-        //once game starts, set hit button to normal hit event behavior
+        //set button states
         hitButton.setEnabled(true);
-        setHitButtonPurpose(PURPOSE_HIT);
-        game.setGameState(PURPOSE_HIT);
         game.setHitButtonState(true);
+
+        standButton.setEnabled(true);
+        game.setStandButtonState(true);
+
+        setHitButtonPurpose(BlackJackGame.PURPOSE_HIT);
+        game.setGameState(BlackJackGame.PURPOSE_HIT);
 
         //get player bet
         int betAmount = Integer.parseInt(bet.getSelectedItem().toString());
@@ -185,8 +127,7 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
-    /*the event for the game restarting; should be triggered by a reset button; perhaps
-    * we can change the hit button to turn into a reset button whenever the game ends*/
+    /*the event for the game restarting; should be triggered by a reset button*/
     private void resetGameEvent(){
         game.reset();
 
@@ -195,7 +136,6 @@ public class GameActivity extends AppCompatActivity {
         RelativeLayout dealerLayout = (RelativeLayout) findViewById(R.id.dealersHand);
 
         //remove the added card images from the layout
-
         for(ImageView image : playerCardImages){
             playerLayout.removeView(image);
         }
@@ -216,13 +156,6 @@ public class GameActivity extends AppCompatActivity {
         player.stand();
         game.revealHole();
 
-        // disable hit button and stand button
-        /*
-        hitButton.setEnabled(false);
-        game.setHitButtonState(false);
-        standButton.setEnabled(false);
-        game.setStandButtonState(false);
-        */
         updateGUI(player);
         updateGUI(dealer);
 
@@ -294,20 +227,16 @@ public class GameActivity extends AppCompatActivity {
 
     /*the event for the player hitting; typically triggered by hit button*/
     private void hitEvent(){
-
-        standButton.setEnabled(true);
-        game.setStandButtonState(true);
         player.hit();
         updateGUI(player);
+
         if(player.isBusted()){
             //dealer wins
-
-
-            //disable button?
             game.deductBet();
+
             updatePlayerBank();
             updateGUI(player);
-            //etc. etc.
+
             gameEndEvent(DEALERWINS);
             return;
         }
@@ -323,15 +252,25 @@ public class GameActivity extends AppCompatActivity {
     private void gameEndEvent(int winIndicator){
         String winText;
 
-        if (winIndicator == 1){
+        //set button states
+        setHitButtonPurpose(BlackJackGame.PURPOSE_NEXT_GAME);
+        game.setGameState(BlackJackGame.PURPOSE_NEXT_GAME);
+
+        hitButton.setEnabled(true);
+        game.setHitButtonState(true);
+
+        standButton.setEnabled(false);
+        game.setStandButtonState(false);
+
+        if (winIndicator == PLAYERWINS){
             winText = "player 1 wins";
         }
 
-        else if (winIndicator == 2){
+        else if (winIndicator == DEALERWINS){
             winText = "dealer wins";
         }
 
-        else if (winIndicator == 3){
+        else if (winIndicator == PUSH){
             winText = "tie";
         }
 
@@ -343,28 +282,23 @@ public class GameActivity extends AppCompatActivity {
         Toast t = Toast.makeText(this, winText, Toast.LENGTH_SHORT);
         t.show();
 
-        //repurpose hit button to next game button
-        setHitButtonPurpose(PURPOSE_NEXT_GAME);
-        game.setGameState(PURPOSE_NEXT_GAME);
-        hitButton.setEnabled(true);
-        game.setHitButtonState(true);
-        //disable stand button
-        standButton.setEnabled(false);
-        game.setStandButtonState(false);
-        serializeObject(game);  // saves state of game to file in serializeObject method
+        //saves state of game to file in serializeObject method
+        serializeObject(game);
     }
 
-    // method to update user of view of amount available to bet
+    /*updates the player's bank textView*/
     private void updatePlayerBank(){
         int bank = player.getBank();
-        bankText = Integer.toString(bank);
-        playerBank.setText(bankText);
+        playerBank.setText(Integer.toString(bank));
     }
 
     /* updateGUI updates player and dealer's scores as well as the images at different points
         during the BlackJackGame */
     private void updateGUI(BlackJackGame.Player playerToUpdate) {
-        float cardPadding = 100; //specifies the X coordinate padding value between card images
+        float cardPadding = 100f; //specifies the X coordinate padding value between card images
+        float initialX = 300f; //the X coordinate of the initial card image
+        float initialY = 0f; //the Y coordinate of the initial card image
+
         Vector<ImageView> imagesToUpdate;
         TextView scoreToUpdate;
 
@@ -424,8 +358,8 @@ public class GameActivity extends AppCompatActivity {
 
                     else{
                     /*set X / Y to initial card position*/
-                        cardImage.setX(300f); //test value
-                        cardImage.setY(0); //test value
+                        cardImage.setX(initialX);
+                        cardImage.setY(initialY);
                     }
 
                     cardImage.setImageResource(cardToImage(hand.elementAt(i)));
@@ -443,8 +377,8 @@ public class GameActivity extends AppCompatActivity {
             /*hand is empty; add two blank cards*/
             imagesToUpdate.clear();
             cardImage = new ImageView(getApplicationContext());
-            cardImage.setX(300f);
-            cardImage.setY(0);
+            cardImage.setX(initialX);
+            cardImage.setY(initialY);
             if(playerToUpdate == player) {
                 cardImage.setImageResource(R.drawable.playerfacedownone);
             }
@@ -457,8 +391,8 @@ public class GameActivity extends AppCompatActivity {
             imagesToUpdate.add(cardImage);
 
             cardImage = new ImageView(getApplicationContext());
-            cardImage.setX(300f + cardPadding);
-            cardImage.setY(0);
+            cardImage.setX(initialX + cardPadding);
+            cardImage.setY(initialY);
             if(playerToUpdate == player) {
                 cardImage.setImageResource(R.drawable.playerfacedowntwo);
             }
@@ -525,68 +459,46 @@ public class GameActivity extends AppCompatActivity {
         return 0;
     }
 
-
     /*used to repurpose the hit button to serve as a start button / restart button, etc.*/
     void setHitButtonPurpose(int purpose) {
         if (hitButton == null) {
             return;
         }
 
-        hitButtonPurpose = purpose;
-
-        if (player.isStanding() || dealer.isStanding() || player.isBusted() || dealer.isBusted()){
+        if (purpose == BlackJackGame.PURPOSE_NEXT_GAME){
+            /*make hit button a next game button*/
+            hitButton.setText("NEXT GAME");
             hitButton.setOnClickListener(new View.OnClickListener(){
                 @Override
                 public void onClick(View v){
-                    standButton.setEnabled(true);
-                    game.setStandButtonState(true);
+                    /*hit button will trigger restart game event*/
                     resetGameEvent();
                 }
             });
 
         }
 
-        else if (purpose == PURPOSE_NEW_GAME) {
+        else if (purpose == BlackJackGame.PURPOSE_NEW_GAME) {
             /*make hit button a new game button*/
             hitButton.setText("NEW GAME");
             hitButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                /*hit button will trigger start game event*/
-                    standButton.setEnabled(true);
-                    game.setStandButtonState(true);
-                    //resetGameEvent();
-                    //startGameEvent();
+                    /*hit button will trigger start game event*/
                     startGameEvent();
                 }
             });
 
         }
 
-        else if (purpose == PURPOSE_HIT) {
+        else if (purpose == BlackJackGame.PURPOSE_HIT) {
             /*make hit button a normal hit button*/
             hitButton.setText("HIT");
             hitButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                /*hit button will trigger hit event*/
-                    standButton.setEnabled(true);
-                    game.setStandButtonState(true);
+                    /*hit button will trigger hit event*/
                     hitEvent();
-                }
-            });
-        }
-
-        else if (purpose == PURPOSE_NEXT_GAME) {
-            hitButton.setText("PLAY AGAIN");
-            hitButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                /*hit button will trigger reset game event*/
-                    standButton.setEnabled(true);
-                    game.setStandButtonState(true);
-                    resetGameEvent();
-
                 }
             });
         }
@@ -597,26 +509,23 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
-
     // saves the state of the variables used in the game
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         serializeObject(game);
-        outState.putBoolean("HIT_BUTTON_ENABLED", hitButton.isEnabled());
-        outState.putBoolean("STAND_BUTTON_ENABLED", standButton.isEnabled());
-        outState.putInt("HIT_BUTTON_PURPOSE", hitButtonPurpose);
     }
-
 
     private void serializeObject(BlackJackGame o){
         try{
-            //FileOutputStream outputStream = new FileOutputStream(SERIALIZABLE_OBJECTS);
-            FileOutputStream outputStream = openFileOutput(SERIALIZABLE_OBJECTS, Context.MODE_PRIVATE);
+            FileOutputStream outputStream = openFileOutput(SERIALIZE_GAME, Context.MODE_PRIVATE);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
             objectOutputStream.writeObject(o);
             //objectOutputStream.flush();
-        } catch (FileNotFoundException e) {
+        }
+
+        /*error has occurred*/
+        catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
@@ -624,16 +533,20 @@ public class GameActivity extends AppCompatActivity {
     }
 
     private BlackJackGame readSerializable(){
-        BlackJackGame g = new BlackJackGame();
+        BlackJackGame g = null;
         try{
-            FileInputStream inputStream = openFileInput(SERIALIZABLE_OBJECTS);
+            FileInputStream inputStream = openFileInput(SERIALIZE_GAME);
             ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
             g = (BlackJackGame) objectInputStream.readObject();
-        } catch (FileNotFoundException e) {
-            serializeObject(game);
-            g = readSerializable();
-            e.printStackTrace();
-        } catch (StreamCorruptedException e) {
+        }
+
+        /*No file exists; therefore, there is no object to retrieve*/
+        catch (FileNotFoundException e) {
+            return null;
+        }
+
+        /*error has occurred*/
+        catch (StreamCorruptedException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
@@ -650,18 +563,26 @@ public class GameActivity extends AppCompatActivity {
         super.onPause();
     }
 
+    /* restores BlackJackGame game object; restores button states; updates screen*/
     public void restoreGameState(){
+        /*update game object*/
         game = readSerializable();
         if (game == null){
             game = new BlackJackGame();
         }
 
-        player = game.getPlayer(); /*grab reference to dealer for convenience*/
-        dealer = game.getDealer(); /*grab reference to player1 for convenience*/
-        updatePlayerBank();
+        /*update convenient player / dealer references*/
+        player = game.getPlayer();
+        dealer = game.getDealer();
 
+        /*update GUI*/
+        updatePlayerBank();
         updateGUI(player);
         updateGUI(dealer);
-    }
 
+        /*update buttons*/
+        hitButton.setEnabled(game.getHitButtonState());
+        standButton.setEnabled(game.getStandButtonState());
+        setHitButtonPurpose(game.getGameState());
+    }
 }
