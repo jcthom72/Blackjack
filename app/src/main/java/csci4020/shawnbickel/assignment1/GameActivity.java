@@ -85,11 +85,18 @@ public class GameActivity extends AppCompatActivity {
 
          /* restore BlackJackGame game object; restore button states; update screen*/
         restoreGameState();
+        if (player.getBank() == 0){
+            player.setBank(50000);
+            int b = player.getBank();
+            String bank = Integer.toString(b);
+            playerBank.setText(bank);
+        }
     }
 
     /*the event for the game starting; could be triggered by
     * a start button; also triggered by resetGameEvent*/
     private void startGameEvent() {
+        checkBank();
         //set button states
         hitButton.setEnabled(true);
         game.setHitButtonState(true);
@@ -584,5 +591,14 @@ public class GameActivity extends AppCompatActivity {
         hitButton.setEnabled(game.getHitButtonState());
         standButton.setEnabled(game.getStandButtonState());
         setHitButtonPurpose(game.getGameState());
+    }
+
+    public void checkBank(){
+        if (player.getBank() == 0){
+            player.setBank(50000);
+            int b = player.getBank();
+            String bank = Integer.toString(b);
+            playerBank.setText(bank);
+        }
     }
 }
