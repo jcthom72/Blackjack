@@ -15,9 +15,6 @@ public class BlackJackGame implements Serializable{
     private  Player player1;
     private  Player dealer;
     private Deck deck;
-    private boolean hitButtonState;
-    private boolean standButtonState;
-    private int gameState;
 
     /*inner classes*/
 
@@ -252,10 +249,6 @@ public class BlackJackGame implements Serializable{
         dealer = new Player();
 
         deck = new Deck();
-
-        // state buttons indicate whether the buttons should be disabled
-        hitButtonState = true;
-        standButtonState = false;
     }
 
     /*returns the player (player1)*/
@@ -286,36 +279,6 @@ public class BlackJackGame implements Serializable{
     * player1 loses*/
     public void deductBet(){
         player1.bank -= player1.bet;
-    }
-
-    // indicates whether the hit button should be enabled or disabled
-    public void setHitButtonState(boolean hitButton){
-        hitButtonState = hitButton;
-    }
-
-    // indicates whether the stand button should be enabled or disabled
-    public void setStandButtonState(boolean standButton){
-        standButtonState = standButton;
-    }
-
-    // sets the current game state or purpose such as 'new game', 'hit', or
-    public void setGameState(int state){
-        gameState = state;
-    }
-
-    // returns the current game state
-    public int getGameState(){
-        return gameState;
-    }
-
-    // returns the state the hit button should be in
-    public boolean getHitButtonState(){
-        return hitButtonState;
-    }
-
-    // returns the state the stand button should be in
-    public boolean getStandButtonState(){
-        return standButtonState;
     }
 
     /*deals the first two cards to the Player specified by "player"*/
