@@ -90,6 +90,7 @@ public class GameActivity extends AppCompatActivity {
     /*the event for the game starting; could be triggered by
     * a start button; also triggered by resetGameEvent*/
     private void startGameEvent() {
+        checkBank(); // checks if player's bank = 0
         //set button states
         hitButton.setEnabled(true);
         game.setHitButtonState(true);
@@ -584,5 +585,15 @@ public class GameActivity extends AppCompatActivity {
         hitButton.setEnabled(game.getHitButtonState());
         standButton.setEnabled(game.getStandButtonState());
         setHitButtonPurpose(game.getGameState());
+    }
+
+    // if player's bank = 0, it is set back to $50,000
+    public void checkBank(){
+        if (player.getBank() == 0){
+            player.setBank(50000);
+            int b = player.getBank();
+            String bank = Integer.toString(b);
+            playerBank.setText(bank);
+        }
     }
 }
